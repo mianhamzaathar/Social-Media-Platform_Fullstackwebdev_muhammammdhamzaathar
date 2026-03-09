@@ -1,0 +1,832 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Saved • Connectify{% endblock %}
+
+{% block content %}
+<div class="mb-2">
+    {% include 'includes/logo_only.html' %}
+</div>
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Header with Collections - Instagram Style -->
+            <div class="saved-header mb-4">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <h2 class="fw-bold mb-1">Saved</h2>
+                        <p class="text-muted small mb-0">All your saved posts in one place</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-light rounded-circle p-2" style="width: 40px; height: 40px;" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3 p-2">
+                            <li><a class="dropdown-item rounded-2 py-2" href="#" onclick="createCollection()"><i class="fas fa-folder-plus me-2" style="color: #FF6B6B;"></i>Create Collection</a></li>
+                            <li><a class="dropdown-item rounded-2 py-2" href="#" onclick="manageCollections()"><i class="fas fa-pencil-alt me-2" style="color: #4ECDC4;"></i>Manage Collections</a></li>
+                            <li><a class="dropdown-item rounded-2 py-2" href="#" onclick="selectPosts()"><i class="fas fa-check-circle me-2" style="color: #0095f6;"></i>Select Posts</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item rounded-2 py-2 text-danger" href="#" onclick="clearAllSaved()"><i class="fas fa-trash me-2"></i>Clear All</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Collections Tabs -->
+                {% if collections %}
+                <div class="collections-scroll d-flex gap-2 overflow-auto pb-2 mb-3" style="scrollbar-width: none;">
+                    <button class="btn {% if not selected_collection %}btn-primary{% else %}btn-light{% endif %} rounded-pill px-4 collection-tab" 
+                            onclick="filterCollection('all')"
+                            style="{% if not selected_collection %}background: linear-gradient(135deg, #FF6B6B, #4ECDC4); border: none;{% endif %}">
+                        <i class="fas fa-th-large me-2"></i>All Posts
+                        <span class="badge bg-white text-dark ms-2 rounded-pill">{{ total_count }}</span>
+                    </button>
+                    
+                    {% for collection in collections %}
+                    <button class="btn {% if selected_collection.id == collection.id %}btn-primary{% else %}btn-light{% endif %} rounded-pill px-4 collection-tab" 
+                            onclick="filterCollection('{{ collection.id }}')"
+                            style="{% if selected_collection.id == collection.id %}background: linear-gradient(135deg, #FF6B6B, #4ECDC4); border: none;{% endif %}">
+                        {% if collection.cover %}
+                        <img src="{{ collection.cover.url }}" class="rounded-circle me-2" style="width: 20px; height: 20px; object-fit: cover;">
+                        {% else %}
+                        <i class="fas fa-folder me-2" style="color: {% cycle '#FF6B6B' '#4ECDC4' '#FFD93D' '#6BCB77' %}"></i>
+                        {% endif %}
+                        {{ collection.name }}
+                        <span class="badge bg-white text-dark ms-2 rounded-pill">{{ collection.posts_count }}</span>
+                    </button>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Search in Saved -->
+                <div class="search-saved position-relative mb-4">
+                    <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3" style="color: #8e8e8e;"></i>
+                    <input type="text" class="form-control rounded-pill bg-light border-0 ps-5 py-2" 
+                           placeholder="Search your saved posts..." id="searchSaved">
+                </div>
+            </div>
+
+            <!-- Saved Posts Grid -->
+            {% if posts %}
+            <div id="saved-posts-grid" class="row g-2 g-md-3">
+                {% for post in posts %}
+                <div class="col-6 col-md-4 saved-post-item" data-post-id="{{ post.id }}" data-collection="{{ post.collection_id|default:'all' }}">
+                    <div class="position-relative rounded-3 overflow-hidden saved-post-card" 
+                         style="aspect-ratio: 1/1; cursor: pointer;"
+                         onclick="openPostModal('{{ post.id }}')">
+                        
+                        <!-- Post Media -->
+                        {% if post.image %}
+                        <img src="{{ post.image.url }}" class="w-100 h-100 object-fit-cover" alt="saved post">
+                        {% elif post.video %}
+                        <video src="{{ post.video.url }}" class="w-100 h-100 object-fit-cover"></video>
+                        {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                            <span class="text-muted text-center p-3">{{ post.content|truncatechars:50 }}</span>
+                        </div>
+                        {% endif %}
+
+                        <!-- Multiple Items Indicator -->
+                        {% if post.images.count > 1 %}
+                        <div class="position-absolute top-0 end-0 m-2">
+                            <div class="bg-dark bg-opacity-50 rounded-circle p-1" style="width: 24px; height: 24px;">
+                                <i class="fas fa-clone fa-xs text-white"></i>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Video Indicator -->
+                        {% if post.video %}
+                        <div class="position-absolute top-0 start-0 m-2">
+                            <div class="bg-dark bg-opacity-50 rounded-circle p-1" style="width: 24px; height: 24px;">
+                                <i class="fas fa-play fa-xs text-white"></i>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Hover Overlay -->
+                        <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center gap-4 hover-overlay">
+                            <div class="text-white text-center">
+                                <i class="fas fa-heart fa-lg mb-1"></i>
+                                <div class="small">{{ post.likes_count }}</div>
+                            </div>
+                            <div class="text-white text-center">
+                                <i class="fas fa-comment fa-lg mb-1"></i>
+                                <div class="small">{{ post.comments_count }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Collection Badge (if in collection) -->
+                        {% if post.collection %}
+                        <div class="position-absolute bottom-0 start-0 m-2">
+                            <span class="badge bg-primary bg-opacity-75 rounded-pill px-2 py-1" style="font-size: 10px;">
+                                <i class="fas fa-folder me-1"></i>{{ post.collection.name }}
+                            </span>
+                        </div>
+                        {% endif %}
+
+                        <!-- Select Checkbox (hidden by default) -->
+                        <div class="position-absolute top-0 start-0 m-2 select-checkbox d-none">
+                            <input type="checkbox" class="form-check-input post-select" value="{{ post.id }}">
+                        </div>
+
+                        <!-- Save Button (Unsaved) -->
+                        <button class="btn position-absolute top-0 end-0 m-2 unsave-btn" 
+                                onclick="event.stopPropagation(); unsavePost('{{ post.id }}')"
+                                style="background: rgba(255,255,255,0.9); width: 32px; height: 32px; padding: 0;">
+                            <i class="fas fa-bookmark text-danger"></i>
+                        </button>
+                    </div>
+
+                    <!-- Post Info (Mobile) -->
+                    <div class="d-md-none mt-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle overflow-hidden" style="width: 24px; height: 24px;">
+                                {% if post.user.profile_pic %}
+                                <img src="{{ post.user.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                {% else %}
+                                <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center">
+                                    <span class="small fw-bold">{{ post.user.username|first|upper }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'profile' username=post.user.username %}" class="text-decoration-none small fw-semibold text-dark">
+                                {{ post.user.username }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Load More -->
+            {% if posts.has_next %}
+            <div class="text-center mt-4">
+                <button class="btn btn-light rounded-pill px-5" onclick="loadMoreSaved()" id="load-more-btn">
+                    <span class="spinner-border spinner-border-sm d-none me-2" id="load-more-spinner"></span>
+                    Load More
+                </button>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 120px; height: 120px;">
+                        <i class="fas fa-bookmark fa-4x" style="color: #ddd;"></i>
+                    </div>
+                </div>
+                <h5 class="fw-bold mb-2">Save</h5>
+                <p class="text-muted mb-4" style="max-width: 400px; margin: 0 auto;">
+                    Save photos and videos that you want to see again. No one is notified, and only you can see what you've saved.
+                </p>
+                
+                <!-- Suggestions -->
+                <div class="suggestions mt-4">
+                    <h6 class="fw-semibold mb-3">Suggested for you</h6>
+                    <div class="row g-2 justify-content-center">
+                        {% for suggestion in suggested_posts|slice:":6" %}
+                        <div class="col-3 col-md-2">
+                            <div class="position-relative rounded-3 overflow-hidden" style="aspect-ratio: 1/1;">
+                                <img src="{{ suggestion.image.url }}" class="w-100 h-100 object-fit-cover">
+                                <button class="btn btn-primary btn-sm position-absolute bottom-0 start-0 w-100 rounded-0" 
+                                        onclick="savePost('{{ suggestion.id }}')"
+                                        style="background: #0095f6; border: none; opacity: 0.9;">
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Explore Button -->
+                <a href="{% url 'explore' %}" class="btn btn-primary rounded-pill px-5 py-2 mt-4" 
+                   style="background: linear-gradient(135deg, #FF6B6B, #4ECDC4); border: none;">
+                    Explore Posts
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Create Collection Modal -->
+<div class="modal fade" id="createCollectionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Create Collection</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="create-collection-form">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Collection Name</label>
+                        <input type="text" class="form-control rounded-3" name="name" placeholder="e.g., Travel, Food, Inspiration" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Cover Image (Optional)</label>
+                        <div class="upload-area border-2 border-dashed rounded-3 p-4 text-center" 
+                             onclick="document.getElementById('collection-cover').click()"
+                             style="border: 2px dashed #ddd; cursor: pointer;">
+                            <i class="fas fa-cloud-upload-alt fa-2x mb-2" style="color: #FF6B6B;"></i>
+                            <p class="small mb-0">Choose a cover image</p>
+                            <input type="file" id="collection-cover" accept="image/*" class="d-none">
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="privateCollection" checked>
+                        <label class="form-check-label small" for="privateCollection">
+                            Keep this collection private
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2" 
+                            style="background: linear-gradient(135deg, #FF6B6B, #4ECDC4); border: none;">
+                        Create Collection
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Move to Collection Modal -->
+<div class="modal fade" id="moveToCollectionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Move to Collection</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="collection-list" style="max-height: 300px; overflow-y: auto;">
+                    <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-2 collection-option" 
+                         onclick="movePostToCollection('all')"
+                         style="cursor: pointer;">
+                        <div class="bg-light rounded-circle p-3">
+                            <i class="fas fa-th-large" style="color: #FF6B6B;"></i>
+                        </div>
+                        <div>
+                            <div class="fw-semibold">All Posts</div>
+                            <small class="text-muted">Remove from collection</small>
+                        </div>
+                    </div>
+                    
+                    {% for collection in collections %}
+                    <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-2 collection-option" 
+                         onclick="movePostToCollection('{{ collection.id }}')"
+                         style="cursor: pointer;">
+                        {% if collection.cover %}
+                        <img src="{{ collection.cover.url }}" class="rounded-circle" style="width: 48px; height: 48px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light rounded-circle p-3">
+                            <i class="fas fa-folder" style="color: {% cycle '#FF6B6B' '#4ECDC4' '#FFD93D' '#6BCB77' %}"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <div class="fw-semibold">{{ collection.name }}</div>
+                            <small class="text-muted">{{ collection.posts_count }} posts</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <button class="btn btn-light w-100 mt-3 rounded-pill py-2" onclick="createCollection()">
+                    <i class="fas fa-plus me-2"></i>Create New Collection
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Post Detail Modal -->
+<div class="modal fade" id="postModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-body p-0">
+                <div class="row g-0">
+                    <div class="col-md-8">
+                        <img src="" id="modal-post-image" class="img-fluid w-100" style="max-height: 600px; object-fit: cover;">
+                    </div>
+                    <div class="col-md-4 p-3">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="rounded-circle overflow-hidden" style="width: 40px; height: 40px;" id="modal-user-avatar">
+                                <img src="" class="w-100 h-100 object-fit-cover">
+                            </div>
+                            <div>
+                                <span class="fw-semibold" id="modal-username"></span>
+                                <small class="text-muted d-block" id="modal-time"></small>
+                            </div>
+                        </div>
+                        
+                        <div id="modal-post-content" class="mb-3"></div>
+                        
+                        <div class="d-flex gap-3 mb-3">
+                            <span><i class="fas fa-heart" style="color: #FF6B6B;"></i> <span id="modal-likes"></span></span>
+                            <span><i class="fas fa-comment" style="color: #4ECDC4;"></i> <span id="modal-comments"></span></span>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-danger flex-grow-1 rounded-pill" id="modal-unsave">
+                                <i class="fas fa-bookmark me-2"></i>Unsave
+                            </button>
+                            <button class="btn btn-outline-secondary rounded-circle p-2" onclick="sharePost()">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary rounded-circle p-2" onclick="moreOptions()">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-overlay {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .saved-post-card:hover .hover-overlay {
+        opacity: 1;
+    }
+    
+    .saved-post-card:hover img {
+        transform: scale(1.05);
+        transition: transform 0.3s ease;
+    }
+    
+    .collection-tab {
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+    
+    .collection-tab:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255,107,107,0.2);
+    }
+    
+    .collection-option:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .select-mode .select-checkbox {
+        display: block !important;
+    }
+    
+    .select-mode .saved-post-card {
+        opacity: 0.8;
+    }
+    
+    .select-mode .saved-post-card.selected {
+        opacity: 1;
+        border: 3px solid #FF6B6B;
+    }
+    
+    .collections-scroll::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .upload-area:hover {
+        border-color: #FF6B6B !important;
+        background-color: #fff5f5;
+    }
+    
+    /* Animation */
+    .saved-post-item {
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Toast Container */
+    .toast-container {
+        z-index: 9999;
+    }
+    
+    .toast {
+        animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .saved-header h2 {
+            font-size: 20px;
+        }
+        
+        .collection-tab {
+            padding-left: 12px;
+            padding-right: 12px;
+            font-size: 13px;
+        }
+    }
+</style>
+
+{% endblock %}
+
+{% block page_js %}
+<script>
+    // CSRF Token Helper
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Toast Notification
+    function showToast(message, type = 'success') {
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(container);
+        }
+        
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type} border-0 show`;
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Unsave Post
+    function unsavePost(postId) {
+        if (confirm('Remove from saved?')) {
+            fetch(`/api/post/${postId}/unsave/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    const postElement = document.querySelector(`.saved-post-item[data-post-id="${postId}"]`);
+                    postElement.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(() => {
+                        postElement.remove();
+                        showToast('Post removed from saved', 'success');
+                        
+                        // Check if no posts left
+                        if (document.querySelectorAll('.saved-post-item').length === 0) {
+                            location.reload();
+                        }
+                    }, 300);
+                }
+            });
+        }
+    }
+
+    // Save Post
+    function savePost(postId) {
+        fetch(`/api/post/${postId}/save/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                showToast('Post saved!', 'success');
+                setTimeout(() => location.reload(), 1000);
+            }
+        });
+    }
+
+    // Filter by Collection
+    function filterCollection(collectionId) {
+        window.location.href = `/saved/?collection=${collectionId}`;
+    }
+
+    // Search in Saved
+    document.getElementById('searchSaved')?.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const posts = document.querySelectorAll('.saved-post-item');
+        
+        posts.forEach(post => {
+            // You can add more searchable data here
+            const postId = post.dataset.postId;
+            if (postId.includes(searchTerm)) {
+                post.style.display = 'block';
+            } else {
+                post.style.display = 'none';
+            }
+        });
+    });
+
+    // Create Collection
+    function createCollection() {
+        const modal = new bootstrap.Modal(document.getElementById('createCollectionModal'));
+        modal.show();
+    }
+
+    // Create Collection Form Submit
+    document.getElementById('create-collection-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch('/api/collections/create/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Collection created', 'success');
+                setTimeout(() => location.reload(), 1000);
+            }
+        });
+    });
+
+    // Manage Collections
+    function manageCollections() {
+        // Open collections management page
+        window.location.href = '/saved/collections/';
+    }
+
+    // Select Posts Mode
+    let selectMode = false;
+    function selectPosts() {
+        selectMode = !selectMode;
+        document.body.classList.toggle('select-mode');
+        
+        if (selectMode) {
+            // Add selection toolbar
+            const toolbar = document.createElement('div');
+            toolbar.id = 'selection-toolbar';
+            toolbar.className = 'position-fixed bottom-0 start-0 w-100 bg-white border-top p-3 shadow';
+            toolbar.style.zIndex = '1050';
+            toolbar.innerHTML = `
+                <div class="container">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="fw-semibold" id="selected-count">0</span> selected
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-secondary rounded-pill px-4" onclick="moveSelected()">
+                                <i class="fas fa-folder-open me-2"></i>Move
+                            </button>
+                            <button class="btn btn-danger rounded-pill px-4" onclick="unsaveSelected()">
+                                <i class="fas fa-trash me-2"></i>Unsave
+                            </button>
+                            <button class="btn btn-light rounded-circle p-2" onclick="selectPosts()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(toolbar);
+            
+            // Add checkboxes
+            document.querySelectorAll('.saved-post-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (selectMode) {
+                        e.preventDefault();
+                        const checkbox = this.closest('.saved-post-item').querySelector('.post-select');
+                        checkbox.checked = !checkbox.checked;
+                        this.classList.toggle('selected', checkbox.checked);
+                        updateSelectedCount();
+                    }
+                });
+            });
+        } else {
+            // Remove toolbar
+            document.getElementById('selection-toolbar')?.remove();
+        }
+    }
+
+    function updateSelectedCount() {
+        const count = document.querySelectorAll('.post-select:checked').length;
+        document.getElementById('selected-count').textContent = count;
+    }
+
+    function moveSelected() {
+        const selected = Array.from(document.querySelectorAll('.post-select:checked')).map(cb => cb.value);
+        if (selected.length === 0) return;
+        
+        // Show move to collection modal
+        const modal = new bootstrap.Modal(document.getElementById('moveToCollectionModal'));
+        modal.show();
+    }
+
+    function movePostToCollection(collectionId) {
+        const selected = Array.from(document.querySelectorAll('.post-select:checked')).map(cb => cb.value);
+        
+        fetch('/api/saved/move-to-collection/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                post_ids: selected,
+                collection_id: collectionId
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                showToast('Posts moved', 'success');
+                location.reload();
+            }
+        });
+    }
+
+    function unsaveSelected() {
+        const selected = Array.from(document.querySelectorAll('.post-select:checked')).map(cb => cb.value);
+        
+        if (confirm(`Remove ${selected.length} posts from saved?`)) {
+            fetch('/api/saved/unsave-multiple/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ post_ids: selected })
+            })
+            .then(response => {
+                if (response.ok) {
+                    showToast('Posts removed', 'success');
+                    location.reload();
+                }
+            });
+        }
+    }
+
+    // Clear All Saved
+    function clearAllSaved() {
+        if (confirm('Remove all saved posts?')) {
+            fetch('/api/saved/clear-all/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    showToast('All saved posts cleared', 'success');
+                    location.reload();
+                }
+            });
+        }
+    }
+
+    // Open Post Modal
+    function openPostModal(postId) {
+        fetch(`/api/post/${postId}/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('modal-post-image').src = data.image;
+                document.getElementById('modal-user-avatar img').src = data.user.profile_pic || '';
+                document.getElementById('modal-username').textContent = data.user.username;
+                document.getElementById('modal-time').textContent = data.time_ago;
+                document.getElementById('modal-post-content').innerHTML = data.content;
+                document.getElementById('modal-likes').textContent = data.likes_count;
+                document.getElementById('modal-comments').textContent = data.comments_count;
+                
+                const modal = new bootstrap.Modal(document.getElementById('postModal'));
+                modal.show();
+            });
+    }
+
+    // Load More Posts
+    let page = 2;
+    async function loadMoreSaved() {
+        const btn = document.getElementById('load-more-btn');
+        const spinner = document.getElementById('load-more-spinner');
+        
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+        
+        try {
+            const response = await fetch(`/api/saved/?page=${page}`);
+            const data = await response.json();
+            
+            if (data.posts.length > 0) {
+                const grid = document.getElementById('saved-posts-grid');
+                data.posts.forEach(post => {
+                    // Add post to grid
+                    // You'll need to generate HTML here
+                });
+                page++;
+            } else {
+                btn.remove();
+            }
+        } catch (error) {
+            showToast('Error loading more posts', 'error');
+        } finally {
+            btn.disabled = false;
+            spinner.classList.add('d-none');
+        }
+    }
+
+    // Share Post
+    function sharePost() {
+        if (navigator.share) {
+            navigator.share({
+                title: 'Check this post on Connectify',
+                url: window.location.href
+            });
+        } else {
+            navigator.clipboard.writeText(window.location.href);
+            showToast('Link copied to clipboard!', 'success');
+        }
+    }
+
+    // More Options
+    function moreOptions() {
+        // Show more options dropdown
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+        // 's' to search
+        if (e.key === 's' && !e.ctrlKey && !e.metaKey) {
+            e.preventDefault();
+            document.getElementById('searchSaved')?.focus();
+        }
+        
+        // 'c' to create collection
+        if (e.key === 'c' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            createCollection();
+        }
+        
+        // Escape to exit select mode
+        if (e.key === 'Escape' && selectMode) {
+            selectPosts();
+        }
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        // Add fadeOut animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeOut {
+                from {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+                to {
+                    opacity: 0;
+                    transform: scale(0.9);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    });
+</script>
+{% endblock %}

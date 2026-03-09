@@ -1,0 +1,911 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}Connectify - Social Media Platform{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    
+    <style>
+        @font-face {
+            font-family: 'Twemoji';
+            src: url('https://cdn.jsdelivr.net/npm/twemoji-colr-font@14.0.2/twemoji.woff2') format('woff2');
+            font-display: swap;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --brand-gradient: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Twemoji', 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            min-height: 100vh;
+        }
+
+        /* Modern Topbar Styling */
+        .topbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .topbar-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+
+        /* Brand/Logo Styling */
+        .brand {
+            font-size: 2rem;
+            font-weight: 800;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .brand-icon {
+            width: 45px;
+            height: 45px;
+            background: var(--brand-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            transform: rotate(5deg);
+            transition: all 0.3s ease;
+        }
+
+        .brand:hover .brand-icon {
+            transform: rotate(0deg) scale(1.1);
+        }
+
+        .brand-text {
+            background: var(--brand-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-dot {
+            width: 8px;
+            height: 8px;
+            background: #FF6B6B;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 2px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+        }
+
+        /* Navigation Chips */
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-chip {
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: transparent;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+        }
+
+        .nav-chip i {
+            font-size: 1rem;
+        }
+
+        .nav-chip:hover {
+            background: var(--brand-gradient);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        /* User Menu Chip */
+        .nav-chip.user-chip {
+            background: var(--brand-gradient);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+        }
+
+        .nav-chip.user-chip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        /* Notification Badge */
+        .notification-badge {
+            position: relative;
+        }
+
+        .notification-badge::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 10px;
+            height: 10px;
+            background: #f56565;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        /* Main Container */
+        .main-shell {
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            padding: 0;
+            min-height: calc(100vh - 140px);
+        }
+
+        /* Card Styling */
+        .cardish {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .cardish:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Button Styles */
+        .btn-gradient {
+            background: var(--brand-gradient);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+
+        .btn-outline-gradient {
+            background: transparent;
+            border: 2px solid transparent;
+            border-image: var(--brand-gradient);
+            border-image-slice: 1;
+            color: #4a5568;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-gradient:hover {
+            background: var(--brand-gradient);
+            color: white;
+        }
+
+        /* Auth card gradient header */
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4) !important;
+        }
+
+        /* Shared Footer */
+        .footer-section {
+            background: white;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            margin-top: 2rem;
+        }
+
+        .footer-brand-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--brand-gradient);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            transform: rotate(5deg);
+        }
+
+        .social-icon {
+            width: 36px;
+            height: 36px;
+            background: #f0f2f5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4a5568;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-icon:hover {
+            background: var(--brand-gradient);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        /* Loading Spinner */
+        .spinner-custom {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f0f2f5;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast-custom {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .topbar-inner {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .brand {
+                font-size: 1.5rem;
+            }
+
+            .brand-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1.4rem;
+            }
+
+            .top-actions {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .nav-chip {
+                padding: 0.4rem 1rem;
+                font-size: 0.85rem;
+            }
+
+            .main-shell {
+                padding: 0;
+                margin: 0;
+            }
+        }
+
+        /* Mobile Bottom Navigation */
+        @media (max-width: 576px) {
+            .mobile-bottom-nav {
+                display: flex !important;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                padding: 0.5rem;
+                box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+                justify-content: space-around;
+                border-top-left-radius: 20px;
+                border-top-right-radius: 20px;
+            }
+
+            .mobile-nav-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-decoration: none;
+                color: #4a5568;
+                font-size: 0.7rem;
+                padding: 0.3rem;
+                border-radius: 10px;
+                transition: all 0.3s ease;
+            }
+
+            .mobile-nav-item i {
+                font-size: 1.2rem;
+                margin-bottom: 0.2rem;
+            }
+
+            .mobile-nav-item.active {
+                color: #667eea;
+                background: #f0f2f5;
+            }
+
+            .main-shell {
+                padding-bottom: 80px;
+            }
+        }
+
+        /* Animation Classes */
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-up {
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Hide top chrome while landing splash is active */
+        html.splash-active .topbar,
+        html.splash-active .mobile-bottom-nav,
+        html.splash-active .footer-section {
+            display: none !important;
+        }
+
+        /* Branded background for login/register pages */
+        body.auth-page {
+            background:
+                radial-gradient(circle at 10% 18%, rgba(255,255,255,0.35) 0 5%, rgba(255,255,255,0) 9%),
+                radial-gradient(circle at 22% 30%, rgba(255,255,255,0.28) 0 4%, rgba(255,255,255,0) 8%),
+                radial-gradient(circle at 35% 14%, rgba(255,255,255,0.30) 0 6%, rgba(255,255,255,0) 10%),
+                radial-gradient(circle at 70% 24%, rgba(255,255,255,0.22) 0 5%, rgba(255,255,255,0) 9%),
+                radial-gradient(circle at 88% 40%, rgba(255,255,255,0.25) 0 6%, rgba(255,255,255,0) 10%),
+                radial-gradient(circle at 76% 78%, rgba(255,255,255,0.24) 0 5%, rgba(255,255,255,0) 9%),
+                linear-gradient(115deg, #f37d7e 0%, #f6a6a7 32%, #e9dfe5 52%, #9bded8 74%, #6ecfc6 100%);
+            background-attachment: fixed;
+        }
+
+        .auth-logo-header {
+            padding: 1.2rem 0 0.4rem;
+            text-align: center;
+            background: transparent;
+        }
+
+        .auth-logo-header .brand {
+            justify-content: center;
+            display: inline-flex;
+            font-size: 2.2rem;
+        }
+
+        .pak-creativity {
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            background: var(--brand-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0.2rem 0 0.8rem;
+        }
+
+        /* Dark mode */
+        body.dark-mode {
+            background: #111827;
+            color: #e5e7eb;
+        }
+
+        body.dark-mode .bg-white,
+        body.dark-mode .topbar,
+        body.dark-mode .footer-section,
+        body.dark-mode .mobile-bottom-nav,
+        body.dark-mode .card,
+        body.dark-mode .modal-content,
+        body.dark-mode .dropdown-menu,
+        body.dark-mode .list-group-item,
+        body.dark-mode .bg-light {
+            background-color: #1f2937 !important;
+            color: #e5e7eb !important;
+            border-color: #374151 !important;
+        }
+
+        body.dark-mode .text-dark,
+        body.dark-mode .nav-link,
+        body.dark-mode .dropdown-item,
+        body.dark-mode .fw-semibold,
+        body.dark-mode .fw-bold,
+        body.dark-mode .btn-link {
+            color: #e5e7eb !important;
+        }
+
+        body.dark-mode .text-muted,
+        body.dark-mode small {
+            color: #9ca3af !important;
+        }
+
+        body.dark-mode .form-control,
+        body.dark-mode .form-select,
+        body.dark-mode .input-group-text {
+            background: #111827 !important;
+            color: #e5e7eb !important;
+            border-color: #374151 !important;
+        }
+
+        body.dark-mode .border,
+        body.dark-mode .border-top,
+        body.dark-mode .border-end,
+        body.dark-mode .border-bottom {
+            border-color: #374151 !important;
+        }
+
+        /* Left sidebar readability in dark mode */
+        body.dark-mode .position-fixed.start-0.top-0.h-100.border-end.bg-white {
+            background: #0f172a !important;
+            border-color: #334155 !important;
+        }
+
+        body.dark-mode .position-fixed.start-0.top-0.h-100.border-end.bg-white .nav-link {
+            background: transparent !important;
+            color: #e5e7eb !important;
+        }
+
+        body.dark-mode .position-fixed.start-0.top-0.h-100.border-end.bg-white .nav-link.bg-light,
+        body.dark-mode .position-fixed.start-0.top-0.h-100.border-end.bg-white .nav-link:hover {
+            background: #1e293b !important;
+        }
+
+        body.dark-mode .position-fixed.start-0.top-0.h-100.border-end.bg-white .nav-link i,
+        body.dark-mode .position-fixed.start-0.top-0.h-100.border-end.bg-white .nav-link span,
+        body.dark-mode .position-fixed.start-0.top-0.h-100.border-end.bg-white h2,
+        body.dark-mode .position-fixed.start-0.top-0.h-100.border-end.bg-white .dropdown-item {
+            color: #e5e7eb !important;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% if request.path == '/login/' or request.path == '/register/' %}auth-page {% endif %}{% if request.session.dark_mode %}dark-mode{% endif %}">
+    <!-- Global CSRF token source for all JS fetch requests -->
+    <form id="global-csrf-form" class="d-none" aria-hidden="true">
+        {% csrf_token %}
+    </form>
+
+    <!-- Toast Container for Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    {% if request.path == '/login/' or request.path == '/register/' %}
+    <div class="auth-logo-header">
+        <a href="/" class="brand">
+            <div class="brand-icon">
+                <i class="fas fa-handshake"></i>
+            </div>
+            <span class="brand-text">Connectify</span>
+            <span class="brand-dot"></span>
+        </a>
+    </div>
+    {% endif %}
+
+    {% if request.path == '/login/' or request.path == '/register/' %}
+    <p class="pak-creativity">Creativity from Pakistan</p>
+    {% endif %}
+
+    <!-- Modern Topbar -->
+    {% if request.path != '/login/' and request.path != '/register/' and request.path != '/home/' and request.path != '/home' and request.path != '/reels/' and request.path != '/reels' and request.path != '/messages/' and request.path != '/messages' and request.path != '/notifications/' and request.path != '/notifications' and request.path != '/search/' and request.path != '/explore/' and request.path != '/activity/' and request.path != '/saved/' and request.path != '/help/' and request.path|slice:":6" != '/chat/' and request.path|slice:":9" != '/profile/' %}
+    <header class="topbar sticky-top">
+        <div class="container topbar-inner">
+            <!-- Brand with Icon -->
+            <a href="/" class="brand">
+                <div class="brand-icon">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <span class="brand-text">Connectify</span>
+                <span class="brand-dot"></span>
+            </a>
+
+            <!-- Navigation Actions -->
+            <div class="top-actions">
+                {% if request.user.is_authenticated %}
+                    {% if request.path == '/home/' %}
+                        <button class="nav-chip d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#searchBar">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    {% endif %}
+                {% else %}
+                    <!-- Guest Navigation -->
+                    <a href="/search/" class="nav-chip">
+                        <i class="fas fa-search"></i>
+                        <span>Explore</span>
+                    </a>
+                    <a href="/login/" class="nav-chip">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Login</span>
+                    </a>
+                    <a href="/register/" class="nav-chip user-chip">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Sign Up</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Collapsible Search Bar (Mobile) -->
+        <div class="collapse container mt-2" id="searchBar">
+            <form action="/search/" method="get" class="d-flex">
+                <input type="text" name="q" class="form-control rounded-pill me-2" placeholder="Search Connectify...">
+                <button type="submit" class="btn btn-gradient rounded-pill">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+    </header>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-shell">
+        {% block content %}
+        <!-- Default content if no block is provided -->
+        <div class="text-center py-5 fade-in">
+            <div class="brand-icon mx-auto mb-4" style="width: 80px; height: 80px; font-size: 3rem;">
+                <i class="fas fa-handshake"></i>
+            </div>
+            <h1 class="display-4 fw-bold mb-3">
+                <span class="brand-text">Welcome to Connectify</span>
+            </h1>
+            <p class="lead text-muted mb-4">Connect with friends and the world around you</p>
+            {% if not request.user.is_authenticated %}
+            <div class="d-flex gap-3 justify-content-center">
+                <a href="/login/" class="btn btn-gradient px-4 py-2">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </a>
+                <a href="/register/" class="btn btn-outline-gradient px-4 py-2">
+                    <i class="fas fa-user-plus me-2"></i>Sign Up
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        {% endblock %}
+    </main>
+
+    <!-- Mobile Bottom Navigation (Visible on mobile only) -->
+    {% if request.path != '/login/' and request.path != '/register/' and request.path != '/home/' and request.path != '/reels/' and request.path != '/messages/' and request.path != '/notifications/' and request.path != '/notifications' and request.path != '/search/' and request.path != '/explore/' and request.path != '/saved/' and request.path|slice:":6" != '/chat/' and request.path|slice:":9" != '/profile/' %}
+    <div class="mobile-bottom-nav d-none">
+        <a href="/" class="mobile-nav-item {% if request.path == '/' %}active{% endif %}">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="/profile/{% if request.user.is_authenticated %}{{ request.user.username }}{% else %}guest{% endif %}/" class="mobile-nav-item">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Shared Footer -->
+    {% if request.path != '/login/' and request.path != '/register/' and request.path != '/home/' and request.path != '/reels/' and request.path != '/messages/' and request.path != '/notifications/' and request.path != '/notifications' and request.path != '/search/' and request.path != '/explore/' and request.path != '/saved/' and request.path|slice:":6" != '/chat/' and request.path|slice:":9" != '/profile/' %}
+    <footer class="footer-section py-5">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="footer-brand-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h4 class="fw-bold mb-0">
+                            <span class="brand-text">Connectify</span>
+                        </h4>
+                    </div>
+                    <p class="text-muted">Where every connection matters. Join our community today.</p>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <h6 class="fw-bold mb-3">Quick Links</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/about/" class="text-muted text-decoration-none">About Us</a></li>
+                        <li class="mb-2"><a href="/features/" class="text-muted text-decoration-none">Features</a></li>
+                        <li class="mb-2"><a href="/pricing/" class="text-muted text-decoration-none">Pricing</a></li>
+                        <li class="mb-2"><a href="/blog/" class="text-muted text-decoration-none">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2">
+                    <h6 class="fw-bold mb-3">Support</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/help/" class="text-muted text-decoration-none">Help Center</a></li>
+                        <li class="mb-2"><a href="/faq/" class="text-muted text-decoration-none">FAQ</a></li>
+                        <li class="mb-2"><a href="/contact/" class="text-muted text-decoration-none">Contact</a></li>
+                        <li class="mb-2"><a href="/privacy/" class="text-muted text-decoration-none">Privacy</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <h6 class="fw-bold mb-3">Join the Community</h6>
+                    <p class="text-muted small">Sign up today and start connecting with people who matter.</p>
+                    <div class="d-flex gap-2">
+                        <a href="/register/" class="btn btn-gradient btn-sm">Sign Up</a>
+                        <a href="/login/" class="btn btn-outline-gradient btn-sm">Sign In</a>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center text-muted small">
+                © 2026 Connectify. All rights reserved.
+            </div>
+        </div>
+    </footer>
+    {% endif %}
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Core JavaScript -->
+    <script>
+        // CSRF Token Helper
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                const cookies = document.cookie.split(";");
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Follow Toggle Function
+        async function followToggle(userId, btn) {
+            try {
+                btn.disabled = true;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                
+                const response = await fetch(`/follow/${userId}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "Content-Type": "application/json"
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const data = await response.json();
+                btn.textContent = data.following ? "Following" : "Follow";
+                btn.classList.toggle("is-following", data.following);
+                
+                // Show success toast
+                showToast(data.following ? 'Started following user' : 'Unfollowed user', 'success');
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('An error occurred. Please try again.', 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast-custom bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} text-white`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+                ${message}
+                <button class="btn-close btn-close-white ms-3" onclick="this.parentElement.remove()"></button>
+            `;
+            container.appendChild(toast);
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 3000);
+        }
+
+        // Like Button Toggle
+        async function likePost(postId, btn) {
+            try {
+                const response = await fetch(`/like/${postId}/`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCookie("csrftoken"),
+                        "Content-Type": "application/json"
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const data = await response.json();
+                const icon = btn.querySelector('i');
+                const countSpan = document.getElementById(`likes-${postId}`);
+                
+                if (data.liked) {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                    btn.classList.add('text-danger');
+                } else {
+                    icon.classList.remove('fas');
+                    icon.classList.add('far');
+                    btn.classList.remove('text-danger');
+                }
+                
+                if (countSpan) {
+                    countSpan.textContent = data.total_likes;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Failed to process your request', 'error');
+            }
+        }
+
+        // Share Post Function
+        async function sharePost(postId) {
+            try {
+                if (navigator.share) {
+                    await navigator.share({
+                        title: 'Check this post on Connectify',
+                        url: window.location.origin + `/post/${postId}/`
+                    });
+                } else {
+                    // Fallback: copy to clipboard
+                    await navigator.clipboard.writeText(window.location.origin + `/post/${postId}/`);
+                    showToast('Link copied to clipboard!', 'success');
+                }
+            } catch (error) {
+                console.error('Error sharing:', error);
+            }
+        }
+
+        // Search with debounce
+        let searchTimeout;
+        function searchPosts(query) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (query.length >= 3) {
+                    // Implement search logic here
+                    console.log('Searching for:', query);
+                    showToast('Searching...', 'info');
+                }
+            }, 500);
+        }
+
+        // Infinite Scroll
+        let loading = false;
+        window.addEventListener('scroll', () => {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 1000) {
+                if (!loading && document.getElementById('load-more')) {
+                    loading = true;
+                    document.getElementById('load-more').click();
+                }
+            }
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add animation class to main content
+            const mainContent = document.querySelector('main');
+            if (mainContent) {
+                mainContent.classList.add('fade-in');
+            }
+            
+            // Set active nav link
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.nav-chip').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+    
+    {% block page_js %}{% endblock %}
+</body>
+</html>

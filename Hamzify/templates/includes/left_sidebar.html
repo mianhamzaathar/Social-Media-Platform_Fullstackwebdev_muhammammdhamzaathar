@@ -1,0 +1,87 @@
+<!-- Shared Left Sidebar -->
+<div class="col-3 d-none d-lg-block position-fixed start-0 top-0 h-100 border-end bg-white" style="width: 280px;">
+    <div class="p-3 h-100 d-flex flex-column">
+        <div class="mb-4 px-3 pt-2">
+            <a href="{% url 'home' %}" class="d-flex align-items-center gap-2 text-decoration-none">
+                <div class="d-flex align-items-center justify-content-center text-white"
+                     style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #FF6B6B, #4ECDC4);">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <h2 class="fw-bold mb-0" style="font-family: 'Instagram Sans', sans-serif; line-height: 1.2;">
+                    <span style="background: linear-gradient(135deg, #FF6B6B, #4ECDC4); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        Connectify
+                    </span>
+                </h2>
+            </a>
+        </div>
+
+        <nav class="nav flex-column flex-grow-1">
+            <a href="{% url 'home' %}" class="nav-link d-flex align-items-center gap-4 px-3 py-3 mb-1 rounded-3 {% if request.path == '/home/' or request.path == '/home' %}bg-light{% endif %}">
+                <i class="fas fa-home fa-xl" style="color: {% if request.path == '/home/' or request.path == '/home' %}#FF6B6B{% else %}#262626{% endif %};"></i>
+                <span class="fw-semibold" style="color: {% if request.path == '/home/' or request.path == '/home' %}#FF6B6B{% else %}#262626{% endif %};">Home</span>
+            </a>
+            <a href="{% url 'search' %}" class="nav-link d-flex align-items-center gap-4 px-3 py-3 mb-1 rounded-3 {% if request.path == '/search/' or request.path == '/search' %}bg-light{% endif %}">
+                <i class="fas fa-search fa-xl" style="color: {% if request.path == '/search/' or request.path == '/search' %}#FF6B6B{% else %}#262626{% endif %};"></i>
+                <span class="fw-semibold" style="color: {% if request.path == '/search/' or request.path == '/search' %}#FF6B6B{% else %}#262626{% endif %};">Search</span>
+            </a>
+            <a href="{% url 'explore' %}" class="nav-link d-flex align-items-center gap-4 px-3 py-3 mb-1 rounded-3 {% if request.path == '/explore/' or request.path == '/explore' %}bg-light{% endif %}">
+                <i class="fas fa-compass fa-xl" style="color: {% if request.path == '/explore/' or request.path == '/explore' %}#FF6B6B{% else %}#262626{% endif %};"></i>
+                <span class="fw-semibold" style="color: {% if request.path == '/explore/' or request.path == '/explore' %}#FF6B6B{% else %}#262626{% endif %};">Explore</span>
+            </a>
+            <a href="{% url 'reels' %}" class="nav-link d-flex align-items-center gap-4 px-3 py-3 mb-1 rounded-3 {% if request.path == '/reels/' or request.path == '/reels' %}bg-light{% endif %}">
+                <i class="fas fa-film fa-xl" style="color: {% if request.path == '/reels/' or request.path == '/reels' %}#FF6B6B{% else %}#262626{% endif %};"></i>
+                <span class="fw-semibold" style="color: {% if request.path == '/reels/' or request.path == '/reels' %}#FF6B6B{% else %}#262626{% endif %};">Reels</span>
+            </a>
+            <a href="{% url 'direct_messages' %}" class="nav-link d-flex align-items-center gap-4 px-3 py-3 mb-1 rounded-3 {% if request.path == '/messages/' or request.path == '/messages' or request.path|slice:':6' == '/chat/' %}bg-light{% endif %}">
+                <i class="fas fa-paper-plane fa-xl" style="color: {% if request.path == '/messages/' or request.path == '/messages' or request.path|slice:':6' == '/chat/' %}#FF6B6B{% else %}#262626{% endif %};"></i>
+                <span class="fw-semibold" style="color: {% if request.path == '/messages/' or request.path == '/messages' or request.path|slice:':6' == '/chat/' %}#FF6B6B{% else %}#262626{% endif %};">Messages</span>
+            </a>
+            <a href="{% url 'notifications' %}" class="nav-link d-flex align-items-center gap-4 px-3 py-3 mb-1 rounded-3 {% if request.path == '/notifications/' or request.path == '/notifications' %}bg-light{% endif %}">
+                <i class="fas fa-heart fa-xl" style="color: {% if request.path == '/notifications/' or request.path == '/notifications' %}#FF6B6B{% else %}#262626{% endif %};"></i>
+                <span class="fw-semibold" style="color: {% if request.path == '/notifications/' or request.path == '/notifications' %}#FF6B6B{% else %}#262626{% endif %};">Notifications</span>
+            </a>
+            {% if request.path == '/home/' or request.path == '/home' %}
+            <button type="button" class="nav-link d-flex align-items-center gap-4 px-3 py-3 mb-1 rounded-3 w-100 border-0 bg-transparent text-start"
+                    data-bs-toggle="modal" data-bs-target="#createModal">
+                <i class="fas fa-plus-square fa-xl" style="color: #262626;"></i>
+                <span class="fw-semibold text-dark">Create</span>
+            </button>
+            {% else %}
+            <a href="{% url 'home' %}?open_create=1" class="nav-link d-flex align-items-center gap-4 px-3 py-3 mb-1 rounded-3">
+                <i class="fas fa-plus-square fa-xl" style="color: #262626;"></i>
+                <span class="fw-semibold text-dark">Create</span>
+            </a>
+            {% endif %}
+            <a href="{% url 'profile' username=request.user.username %}" class="nav-link d-flex align-items-center gap-4 px-3 py-3 mb-1 rounded-3 {% if request.path|slice:':9' == '/profile/' %}bg-light{% endif %}">
+                <div class="rounded-circle overflow-hidden" style="width: 24px; height: 24px;">
+                    {% if request.user.profile_pic %}
+                    <img src="{{ request.user.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                    {% else %}
+                    <div class="bg-secondary bg-opacity-25 w-100 h-100 d-flex align-items-center justify-content-center">
+                        <span class="small fw-bold">{{ request.user.username|first|upper }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <span class="fw-semibold text-dark">Profile</span>
+            </a>
+        </nav>
+
+        <div class="mt-auto">
+            <div class="dropdown">
+                <button class="nav-link d-flex align-items-center gap-4 px-3 py-3 w-100 border-0 bg-transparent" data-bs-toggle="dropdown">
+                    <i class="fas fa-bars fa-xl"></i>
+                    <span class="fw-semibold">More</span>
+                </button>
+                <ul class="dropdown-menu border-0 shadow-lg rounded-3 p-2" style="width: 260px;">
+                    <li><a class="dropdown-item rounded-2 py-2" href="{% url 'settings' %}"><i class="fas fa-cog me-3"></i>Settings</a></li>
+                    <li><a class="dropdown-item rounded-2 py-2" href="{% url 'activity' %}"><i class="fas fa-activity me-3"></i>Your activity</a></li>
+                    <li><a class="dropdown-item rounded-2 py-2" href="{% url 'saved_posts' %}"><i class="fas fa-bookmark me-3"></i>Saved</a></li>
+                    <li><a class="dropdown-item rounded-2 py-2" href="{% url 'toggle_dark_mode' %}"><i class="fas fa-moon me-3"></i>Dark mode</a></li>
+                    <li><a class="dropdown-item rounded-2 py-2" href="{% url 'help_center' %}"><i class="fas fa-info-circle me-3"></i>Help</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item rounded-2 py-2 text-danger" href="{% url 'logout_user' %}"><i class="fas fa-sign-out-alt me-3"></i>Log out</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

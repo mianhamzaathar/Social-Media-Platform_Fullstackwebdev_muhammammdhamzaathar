@@ -1,0 +1,1126 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home - Connectify{% endblock %}
+
+{% block content %}
+<!-- Instagram Clone Layout -->
+<div class="container-fluid px-0">
+    <div class="row g-0">
+        {% include 'includes/left_sidebar.html' %}
+
+        <!-- Main Feed -->
+        <div class="col-lg-6 col-xl-5 mx-auto" style="margin-left: 280px;">
+            <div class="px-4 py-3" style="max-width: 630px; margin: 0 auto;">
+                <!-- Stories Section - Instagram Style -->
+                <div class="stories-container bg-white rounded-3 border p-3 mb-4">
+                    <div class="stories-scroll d-flex gap-3 overflow-auto" style="scrollbar-width: none;">
+                        <!-- Your Story -->
+                        <div class="story-item text-center" style="min-width: 80px;">
+                            <button class="story-bubble border-0 bg-transparent p-0" data-bs-toggle="modal" data-bs-target="#createStoryModal" type="button">
+                            <div class="position-relative d-inline-block">
+                                <div class="rounded-circle overflow-hidden border-2" style="width: 66px; height: 66px; border: 2px solid #dbdbdb; padding: 2px;">
+                                    <div class="rounded-circle overflow-hidden w-100 h-100">
+                                        {% if request.user.profile_pic %}
+                                        <img src="{{ request.user.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                        {% else %}
+                                        <div class="bg-secondary bg-opacity-10 w-100 h-100 d-flex align-items-center justify-content-center">
+                                            <span class="fs-4 fw-bold">{{ request.user.username|first|upper }}</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="position-absolute bottom-0 end-0 mb-0 me-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                     style="width: 22px; height: 22px; border: 2px solid white;">
+                                    <i class="fas fa-plus fa-xs"></i>
+                                </div>
+                            </div>
+                            <span class="small d-block mt-1 text-truncate" style="font-size: 12px;">Your Story</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Stories from users -->
+                        {% for story in stories %}
+                        <div class="story-item text-center" style="min-width: 80px;">
+                            <button class="story-bubble border-0 bg-transparent p-0" onclick="openStory('{{ story.id }}')">
+                                <div class="rounded-circle overflow-hidden border-2" style="width: 66px; height: 66px; {% if story.viewed %}border-color: #dbdbdb;{% else %}border-color: #FF6B6B;{% endif %} padding: 2px;">
+                                    <div class="rounded-circle overflow-hidden w-100 h-100">
+                                        {% if story.user.profile_pic %}
+                                        <img src="{{ story.user.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                        {% else %}
+                                        <div class="bg-secondary bg-opacity-10 w-100 h-100 d-flex align-items-center justify-content-center">
+                                            <span class="fs-5 fw-bold">{{ story.user.username|first|upper }}</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <span class="small d-block mt-1 text-truncate" style="font-size: 12px;">{{ story.user.username }}</span>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Feed Posts -->
+                <div class="feed-container" id="feed-list">
+                    {% for post in posts %}
+                    <div class="card border-0 rounded-3 mb-4" style="border: 1px solid #dbdbdb !important;" id="post-{{ post.id }}">
+                        <!-- Post Header -->
+                        <div class="card-header bg-white border-0 px-3 pt-3 pb-2">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <a href="{% url 'profile' username=post.user.username %}" class="text-decoration-none">
+                                        <div class="rounded-circle overflow-hidden" style="width: 42px; height: 42px;">
+                                            {% if post.user.profile_pic %}
+                                            <img src="{{ post.user.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                            {% else %}
+                                            <div class="bg-secondary bg-opacity-10 w-100 h-100 d-flex align-items-center justify-content-center">
+                                                <span class="fw-bold">{{ post.user.username|first|upper }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </a>
+                                    <div>
+                                        <a href="{% url 'profile' username=post.user.username %}" class="text-dark text-decoration-none fw-semibold small">
+                                            {{ post.user.username }}
+                                        </a>
+                                        <div class="text-muted small">{{ post.location|default:"" }}</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Three dots menu -->
+                                <div class="dropdown">
+                                    <button class="btn btn-link text-dark p-0" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3">
+                                        {% if request.user == post.user %}
+                                        <li><a class="dropdown-item" href="#" onclick="editPost({{ post.id }})"><i class="fas fa-edit me-2"></i>Edit</a></li>
+                                        <li><a class="dropdown-item text-danger" href="#" onclick="deletePost({{ post.id }})"><i class="fas fa-trash me-2"></i>Delete</a></li>
+                                        {% else %}
+                                        <li><a class="dropdown-item" href="#" onclick="reportPost({{ post.id }})"><i class="fas fa-flag me-2"></i>Report</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="unfollowUser({{ post.user.id }})"><i class="fas fa-user-minus me-2"></i>Unfollow</a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="addToFavorites({{ post.user.id }})"><i class="fas fa-star me-2"></i>Add to favorites</a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Post Image -->
+                        <div class="position-relative">
+                            {% if post.image %}
+                            <img src="{{ post.image.url }}" class="img-fluid w-100" alt="Post" style="max-height: 600px; object-fit: cover;">
+                            {% elif post.video %}
+                            <video src="{{ post.video.url }}" class="img-fluid w-100" style="max-height: 600px; object-fit: cover;" controls></video>
+                            {% endif %}
+                            
+                            <!-- Multiple image indicator -->
+                            {% if post.images.count > 1 %}
+                            <div class="position-absolute top-50 end-0 translate-middle-y me-3">
+                                <div class="bg-dark bg-opacity-50 text-white rounded-pill px-3 py-1 small">
+                                    1/{{ post.images.count }}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Post Actions -->
+                        <div class="card-body bg-white px-3 pb-2 pt-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <div class="d-flex gap-3">
+                                    <button class="btn btn-link p-0 text-dark like-btn" data-post-id="{{ post.id }}">
+                                        <i class="{% if post.user_has_liked %}fas{% else %}far{% endif %} fa-heart fa-2x" style="color: {% if post.user_has_liked %}#FF6B6B{% endif %};"></i>
+                                    </button>
+                                    <button class="btn btn-link p-0 text-dark" onclick="commentOnPost({{ post.id }})">
+                                        <i class="far fa-comment fa-2x"></i>
+                                    </button>
+                                    <button class="btn btn-link p-0 text-dark" onclick="sharePost({{ post.id }})">
+                                        <i class="far fa-paper-plane fa-2x"></i>
+                                    </button>
+                                </div>
+                                <button class="btn btn-link p-0 text-dark save-btn" data-post-id="{{ post.id }}">
+                                    <i class="{% if post.user_has_saved %}fas{% else %}far{% endif %} fa-bookmark fa-2x"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Likes -->
+                            <div class="fw-semibold small mb-2">
+                                <span id="likes-{{ post.id }}">{{ post.likes_count }}</span> likes
+                            </div>
+                            
+                            <!-- Caption -->
+                            <div class="small mb-2">
+                                <span class="fw-semibold me-2">{{ post.user.username }}</span>
+                                <span>{{ post.content|truncatechars:150 }}</span>
+                            </div>
+                            
+                            <!-- Comments preview -->
+                            <div class="comments-preview">
+                                {% for comment in post.comments.all|slice:":2" %}
+                                <div class="small mb-1">
+                                    <span class="fw-semibold me-2">{{ comment.user.username }}</span>
+                                    <span>{{ comment.text|truncatechars:50 }}</span>
+                                </div>
+                                {% endfor %}
+                                
+                                {% if post.comments.count > 2 %}
+                                <button class="btn btn-link p-0 text-muted small text-decoration-none" onclick="viewAllComments({{ post.id }})">
+                                    View all {{ post.comments.count }} comments
+                                </button>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Time -->
+                            <div class="text-muted text-uppercase small mt-2" style="font-size: 10px;">
+                                {{ post.created_at|timesince }} ago
+                            </div>
+                        </div>
+                        
+                        <!-- Add Comment -->
+                        <div class="card-footer bg-white border-0 px-3 pb-3 pt-0">
+                            <div class="d-flex align-items-center gap-3 border-top pt-3">
+                                <div class="rounded-circle overflow-hidden" style="width: 32px; height: 32px;">
+                                    {% if request.user.profile_pic %}
+                                    <img src="{{ request.user.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                    {% else %}
+                                    <div class="bg-secondary bg-opacity-10 w-100 h-100 d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-smile"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <input type="text" class="form-control form-control-sm border-0 bg-light rounded-pill px-3 py-2" 
+                                       placeholder="Add a comment..." 
+                                       style="font-size: 14px;"
+                                       onkeypress="if(event.keyCode==13) addComment(this, {{ post.id }})">
+                                <button class="btn btn-link text-primary p-0 small text-decoration-none" style="color: #0095f6 !important;" onclick="addComment(this.previousElementSibling, {{ post.id }})">Post</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <img src="{% static 'images/no-posts.png' %}" alt="No posts" class="mb-3" style="width: 200px;">
+                        <h5>No posts yet</h5>
+                        <p class="text-muted">Follow people to see their posts</p>
+                        <a href="{% url 'explore' %}" class="btn btn-primary rounded-pill px-4" style="background: #0095f6; border: none;">
+                            Explore People
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="col-3 d-none d-xl-block position-fixed end-0 top-0 h-100" style="width: 380px;">
+            <div class="p-4">
+                <!-- Current User -->
+                {% if request.user.is_authenticated %}
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle overflow-hidden" style="width: 56px; height: 56px;">
+                            {% if request.user.profile_pic %}
+                            <img src="{{ request.user.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                            {% else %}
+                            <div class="bg-secondary bg-opacity-10 w-100 h-100 d-flex align-items-center justify-content-center">
+                                <span class="fw-bold fs-4">{{ request.user.username|first|upper }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="fw-semibold">{{ request.user.username }}</div>
+                            <div class="small text-muted">{{ request.user.get_full_name }}</div>
+                        </div>
+                    </div>
+                    <a href="{% url 'logout_user' %}" class="text-decoration-none small fw-semibold" style="color: #0095f6;">Switch</a>
+                </div>
+                {% endif %}
+
+                <!-- Suggestions -->
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="fw-semibold text-muted small mb-0">Suggested for you</h6>
+                    <a href="#" class="text-decoration-none small fw-semibold" style="color: #262626;">See All</a>
+                </div>
+
+                {% for person in suggested_users|slice:":5" %}
+                {% if request.user.id != person.id %}
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle overflow-hidden" style="width: 44px; height: 44px;">
+                            {% if person.profile_pic %}
+                            <img src="{{ person.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                            {% else %}
+                            <div class="bg-secondary bg-opacity-10 w-100 h-100 d-flex align-items-center justify-content-center">
+                                <span class="fw-bold">{{ person.username|first|upper }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="fw-semibold small">{{ person.username }}</div>
+                            <div class="small text-muted">Followed by {{ person.followers_count }} people</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm rounded-pill px-3 py-1 fw-semibold follow-btn"
+                            data-user-id="{{ person.id }}" 
+                            style="background: #0095f6; border: none; color: #fff; min-width: 88px;">
+                        Follow
+                    </button>
+                </div>
+                {% endif %}
+                {% endfor %}
+
+                <!-- Footer -->
+                <div class="mt-4">
+                    <div class="small text-muted d-flex flex-wrap gap-2" style="font-size: 11px;">
+                        <a href="#" class="text-muted text-decoration-none">About</a>·
+                        <a href="#" class="text-muted text-decoration-none">Help</a>·
+                        <a href="#" class="text-muted text-decoration-none">Press</a>·
+                        <a href="#" class="text-muted text-decoration-none">API</a>·
+                        <a href="#" class="text-muted text-decoration-none">Jobs</a>·
+                        <a href="#" class="text-muted text-decoration-none">Privacy</a>·
+                        <a href="#" class="text-muted text-decoration-none">Terms</a>
+                    </div>
+                    <div class="small text-muted mt-3" style="font-size: 11px;">
+                        © 2024 CONNECTIFY
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Modal with Options -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0 rounded-3">
+            <div class="modal-header border-0 justify-content-center">
+                <h5 class="modal-title fw-bold">Create</h5>
+                <button type="button" class="btn-close position-absolute end-0 me-3" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <!-- Story Option -->
+                <button class="d-flex align-items-center gap-3 w-100 p-3 border-0 bg-transparent" 
+                        data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#createStoryModal">
+                    <div class="rounded-circle bg-light p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="fas fa-plus-circle fa-2x" style="color: #FF6B6B;"></i>
+                    </div>
+                    <div class="text-start">
+                        <div class="fw-semibold">Story</div>
+                        <div class="small text-muted">Share photos or videos that disappear in 24 hours</div>
+                    </div>
+                </button>
+                
+                <!-- Reel Option -->
+                <button class="d-flex align-items-center gap-3 w-100 p-3 border-0 bg-transparent border-top" 
+                        data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#createReelModal">
+                    <div class="rounded-circle bg-light p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="fas fa-film fa-2x" style="color: #4ECDC4;"></i>
+                    </div>
+                    <div class="text-start">
+                        <div class="fw-semibold">Reel</div>
+                        <div class="small text-muted">Create short, entertaining videos</div>
+                    </div>
+                </button>
+                
+                <!-- Live Option -->
+                <button class="d-flex align-items-center gap-3 w-100 p-3 border-0 bg-transparent border-top" 
+                        data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#createLiveModal">
+                    <div class="rounded-circle bg-light p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="fas fa-video fa-2x" style="color: #FF6B6B;"></i>
+                    </div>
+                    <div class="text-start">
+                        <div class="fw-semibold">Live</div>
+                        <div class="small text-muted">Go live and interact with followers in real-time</div>
+                    </div>
+                </button>
+                
+                <!-- Post Option -->
+                <button class="d-flex align-items-center gap-3 w-100 p-3 border-0 bg-transparent border-top" 
+                        data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#createPostModal">
+                    <div class="rounded-circle bg-light p-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="fas fa-images fa-2x" style="color: #4ECDC4;"></i>
+                    </div>
+                    <div class="text-start">
+                        <div class="fw-semibold">Post</div>
+                        <div class="small text-muted">Share photos or videos on your feed</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Story Modal -->
+<div class="modal fade" id="createStoryModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Create Story</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="upload-area border-2 border-dashed rounded-4 p-5 text-center mb-3" 
+                     onclick="document.getElementById('story-file').click()"
+                     style="border: 2px dashed #dbdbdb; cursor: pointer;">
+                    <i class="fas fa-camera fa-4x mb-3" style="color: #FF6B6B;"></i>
+                    <p class="mb-1 fw-semibold">Create a story</p>
+                    <small class="text-muted">Share photos or videos that disappear in 24 hours</small>
+                    <input type="file" name="story" id="story-file" accept="image/*,video/*" class="d-none" onchange="previewStory(this)">
+                </div>
+                
+                <div id="story-preview" class="position-relative d-none">
+                    <img src="" alt="Preview" class="img-fluid rounded-3" style="max-height: 300px; width: 100%; object-fit: cover;">
+                    <video src="" class="img-fluid rounded-3 d-none" style="max-height: 300px; width: 100%; object-fit: cover;" controls></video>
+                    <button class="btn-close position-absolute top-0 end-0 m-2 bg-white rounded-circle p-2" onclick="removeStory()"></button>
+                </div>
+                
+                <div class="d-flex gap-2 mt-3">
+                    <input type="text" id="story-caption" class="form-control bg-light border-0 rounded-pill" placeholder="Add a caption...">
+                    <button type="button" class="btn btn-light rounded-circle" title="Add emoji" onclick="toggleCaptionEmojiMenu(event, 'story-caption')">
+                        <i class="far fa-smile"></i>
+                    </button>
+                    <input type="text" id="story-location" class="form-control bg-light border-0 rounded-pill" placeholder="Add location...">
+                    <button class="btn btn-primary rounded-pill px-4" style="background: #FF6B6B; border: none;" onclick="shareStory()">
+                        Share
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Reel Modal -->
+<div class="modal fade" id="createReelModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Create Reel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="upload-area border-2 border-dashed rounded-4 p-5 text-center mb-3" 
+                     onclick="document.getElementById('reel-file').click()"
+                     style="border: 2px dashed #dbdbdb; cursor: pointer;">
+                    <i class="fas fa-film fa-4x mb-3" style="color: #4ECDC4;"></i>
+                    <p class="mb-1 fw-semibold">Create a reel</p>
+                    <small class="text-muted">Share short, entertaining videos</small>
+                    <input type="file" name="reel" id="reel-file" accept="video/*" class="d-none" onchange="previewReel(this)">
+                </div>
+                
+                <div id="reel-preview" class="position-relative d-none">
+                    <video src="" class="img-fluid rounded-3" style="max-height: 300px; width: 100%; object-fit: cover;" controls></video>
+                    <button class="btn-close position-absolute top-0 end-0 m-2 bg-white rounded-circle p-2" onclick="removeReel()"></button>
+                </div>
+                
+                <div class="mt-3">
+                    <input type="text" id="reel-caption" class="form-control bg-light border-0 rounded-3 mb-2" placeholder="Add caption...">
+                    <button type="button" class="btn btn-light rounded-pill px-3 mb-2" onclick="toggleCaptionEmojiMenu(event, 'reel-caption')">
+                        <i class="far fa-smile me-1"></i>Add emoji
+                    </button>
+                    <input type="text" id="reel-location" class="form-control bg-light border-0 rounded-3 mb-2" placeholder="Add location...">
+                    <input type="text" class="form-control bg-light border-0 rounded-3 mb-2" placeholder="Add music...">
+                    <select class="form-select bg-light border-0 rounded-3">
+                        <option>Select audio</option>
+                        <option>Original audio</option>
+                        <option>Trending songs</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary w-100 mt-3 rounded-pill" style="background: #4ECDC4; border: none;" onclick="shareReel()">
+                    Share Reel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Live Modal -->
+<div class="modal fade" id="createLiveModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Go Live</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <div class="mb-4">
+                    <i class="fas fa-video fa-5x" style="color: #FF6B6B;"></i>
+                </div>
+                <h6 class="fw-bold mb-3">Start a live video</h6>
+                <p class="text-muted small mb-4">Go live and interact with your followers in real-time</p>
+                
+                <div class="form-check form-switch text-start mb-3">
+                    <input class="form-check-input" type="checkbox" id="liveNotifications">
+                    <label class="form-check-label small" for="liveNotifications">Send notification to followers</label>
+                </div>
+                
+                <div class="form-check form-switch text-start mb-4">
+                    <input class="form-check-input" type="checkbox" id="liveComments">
+                    <label class="form-check-label small" for="liveComments">Allow comments</label>
+                </div>
+                
+                <button class="btn btn-primary w-100 rounded-pill py-2" style="background: #FF6B6B; border: none;" onclick="startLive()">
+                    <i class="fas fa-circle text-danger me-2"></i>Go Live
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Post Modal -->
+<div class="modal fade" id="createPostModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold w-100 text-center">Create new post</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="create-post-form" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="upload-area border-2 border-dashed rounded-4 p-5 text-center mb-3" 
+                         onclick="document.getElementById('post-file').click()"
+                         style="border: 2px dashed #dbdbdb; cursor: pointer;">
+                        <i class="fas fa-cloud-upload-alt fa-4x mb-3" style="color: #4ECDC4;"></i>
+                        <p class="mb-1 fw-semibold">Select photos/videos</p>
+                        <small class="text-muted">Or drag and drop files</small>
+                        <input type="file" name="image" id="post-file" accept="image/*,video/*" class="d-none" multiple onchange="previewPost(this)">
+                    </div>
+                    
+                    <div id="post-preview" class="row g-2 mb-3 d-none"></div>
+                    
+                    <textarea id="post-caption" name="content" class="form-control border-0 bg-light rounded-3 p-3 mb-3" 
+                              rows="3" placeholder="Write a caption..."></textarea>
+                    <button type="button" class="btn btn-light rounded-pill px-3 mb-3" onclick="toggleCaptionEmojiMenu(event, 'post-caption')">
+                        <i class="far fa-smile me-1"></i>Add emoji
+                    </button>
+                    
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-light border-0"><i class="fas fa-map-marker-alt"></i></span>
+                        <input type="text" name="location" class="form-control bg-light border-0" placeholder="Add location">
+                    </div>
+                    
+                    <div class="border-top pt-3 mb-3">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="hideLikes">
+                            <label class="form-check-label small" for="hideLikes">Hide like and view counts</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="turnOffComments">
+                            <label class="form-check-label small" for="turnOffComments">Turn off commenting</label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2" 
+                            style="background: #4ECDC4; border: none;">
+                        Share
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Caption Emoji Menu -->
+<div id="caption-emoji-menu" class="d-none position-fixed bg-white border rounded-4 shadow p-2" style="z-index: 2000; width: 280px; max-height: 220px; overflow-y: auto;">
+    <div class="d-flex flex-wrap gap-1" id="caption-emoji-grid"></div>
+</div>
+
+<!-- Story Viewer Modal -->
+<div class="modal fade" id="storyViewerModal" tabindex="-1">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-black">
+            <div class="modal-body p-0 position-relative">
+                <!-- Story Header -->
+                <div class="position-absolute top-0 start-0 end-0 p-4" style="z-index: 10; background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle overflow-hidden" style="width: 40px; height: 40px;" id="story-user-avatar">
+                                <img src="" class="w-100 h-100 object-fit-cover">
+                            </div>
+                            <div>
+                                <span class="fw-bold text-white" id="story-username">username</span>
+                                <span class="text-white-50 small ms-2" id="story-time">2h ago</span>
+                                <div class="text-white-50 small" id="story-location"></div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" id="story-delete-btn" class="btn btn-sm btn-danger d-none" onclick="deleteCurrentStory()">Delete</button>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bars -->
+                    <div class="d-flex gap-1 mt-3" id="story-progress"></div>
+                </div>
+                
+                <!-- Story Content -->
+                <div class="h-100 d-flex align-items-center justify-content-center">
+                    <img id="story-image" src="" alt="Story" class="img-fluid d-none" style="max-height: 90vh;">
+                    <video id="story-video" class="img-fluid d-none" style="max-height: 90vh;" controls></video>
+                </div>
+                
+                <!-- Navigation -->
+                <button class="btn btn-dark bg-opacity-50 position-absolute top-50 start-0 translate-middle-y ms-4 rounded-circle border-0" 
+                        style="width: 40px; height: 40px;" onclick="changeStory('prev')">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="btn btn-dark bg-opacity-50 position-absolute top-50 end-0 translate-middle-y me-4 rounded-circle border-0" 
+                        style="width: 40px; height: 40px;" onclick="changeStory('next')">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                
+                <!-- Story Reply -->
+                <div class="position-absolute bottom-0 start-0 end-0 p-4" style="background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);">
+                    <div class="d-flex gap-2">
+                        <input type="text" class="form-control bg-dark bg-opacity-50 text-white border-0 rounded-pill" 
+                               placeholder="Send message" id="story-reply-input">
+                        <button class="btn btn-link text-white p-0" style="width: 40px;" onclick="sendStoryReply()">
+                            <i class="fas fa-paper-plane fa-lg" style="color: #4ECDC4;"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+<style>
+    /* Instagram-like styles */
+    .story-item {
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .story-item:hover {
+        transform: scale(1.02);
+    }
+    .border-2 {
+        border-width: 2px !important;
+    }
+    .border-dashed {
+        border-style: dashed !important;
+    }
+    .upload-area {
+        transition: all 0.3s ease;
+    }
+    .upload-area:hover {
+        border-color: #FF6B6B !important;
+        background-color: #fff5f5;
+    }
+    .toast-container {
+        z-index: 9999;
+    }
+    .modal-content {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .dropdown-item:active {
+        background-color: #f8f9fa;
+    }
+    
+    /* Scrollbar hide for stories */
+    .stories-scroll::-webkit-scrollbar {
+        display: none;
+    }
+    
+    /* Progress animation */
+    @keyframes progress {
+        from { width: 0%; }
+        to { width: 100%; }
+    }
+    
+    .story-progress-bar {
+        animation: progress 5s linear forwards;
+    }
+
+    .emoji-item,
+    #caption-emoji-grid .btn {
+        font-family: "Twemoji", "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif !important;
+    }
+    
+    #post-caption, #story-caption, #reel-caption {
+        font-family: "Twemoji", "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif !important;
+    }
+
+    .flag-emoji-icon {
+        width: 18px;
+        height: 13px;
+        object-fit: cover;
+        border-radius: 2px;
+        border: 1px solid #e5e7eb;
+        vertical-align: middle;
+    }
+</style>
+
+{% endblock %}
+
+{% block page_js %}
+<script>
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function getCSRFToken() {
+    var csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+    var meta = document.querySelector('meta[name=\"csrf-token\"]');
+    return getCookie('csrftoken') || (csrfInput ? csrfInput.value : '') || (meta ? meta.getAttribute('content') : '');
+}
+
+function showToast(message, type) {
+    var kind = type || 'info';
+    var container = document.querySelector('.toast-container');
+    if (!container) return;
+    var toast = document.createElement('div');
+    toast.className = 'toast align-items-center text-white border-0 show ' + (kind === 'success' ? 'bg-success' : 'bg-danger');
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = '<div class=\"d-flex\"><div class=\"toast-body\">' + message + '</div><button type=\"button\" class=\"btn-close btn-close-white me-2 m-auto\" data-bs-dismiss=\"toast\"></button></div>';
+    container.appendChild(toast);
+    setTimeout(function () { toast.remove(); }, 3000);
+}
+
+async function apiPost(url, formData, isJson) {
+    var headers = { 'X-CSRFToken': getCSRFToken() };
+    if (isJson) headers['Content-Type'] = 'application/json';
+    var response = await fetch(url, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: headers,
+        body: formData || null
+    });
+    var data = {};
+    try { data = await response.json(); } catch (e) { data = {}; }
+    if (!response.ok) throw new Error(data.error || 'Request failed');
+    return data;
+}
+
+var activeCaptionTargetId = null;
+var currentStoryId = null;
+var currentStoryOwnerId = null;
+var myUserId = Number("{{ request.user.id }}");
+var captionEmojiList = [
+    '😀','😁','😂','🤣','😊','😍','😎','🤩','🥳','😭','😡','🤔','😴','😅','🙌','👏','👍','👎','🙏','🤝',
+    '❤️','💙','💚','💛','🖤','💯','🔥','✨','🎉','🎊','🚀','🌟','⭐','🍕','🍔','☕','⚽','🏏','🎵','🎬'
+];
+var captionFlagList = [
+    { code: 'pk', emoji: '🇵🇰' },
+    { code: 'ir', emoji: '🇮🇷' },
+    { code: 'us', emoji: '🇺🇸' },
+    { code: 'gb', emoji: '🇬🇧' },
+    { code: 'sa', emoji: '🇸🇦' },
+    { code: 'ae', emoji: '🇦🇪' },
+    { code: 'in', emoji: '🇮🇳' },
+    { code: 'tr', emoji: '🇹🇷' },
+    { code: 'ca', emoji: '🇨🇦' },
+    { code: 'au', emoji: '🇦🇺' },
+    { code: 'de', emoji: '🇩🇪' }
+];
+
+function renderCaptionEmojiGrid() {
+    var grid = document.getElementById('caption-emoji-grid');
+    if (!grid || grid.dataset.ready === '1') return;
+    var emojiButtons = captionEmojiList.map(function(emoji) {
+        return '<button type="button" class="btn btn-light btn-sm caption-emoji-btn" data-emoji="' + emoji + '" style="min-width: 34px;">' + emoji + '</button>';
+    }).join('');
+    var flagButtons = captionFlagList.map(function(item) {
+        return '<button type="button" class="btn btn-light btn-sm caption-emoji-btn" data-emoji="' + item.emoji + '" title="' + item.code.toUpperCase() + '" style="min-width: 40px;"><img class="flag-emoji-icon" src="https://flagcdn.com/24x18/' + item.code + '.png" alt="' + item.code.toUpperCase() + '"></button>';
+    }).join('');
+    grid.innerHTML = emojiButtons + '<div class="w-100"></div>' + flagButtons;
+    grid.dataset.ready = '1';
+
+    grid.querySelectorAll('.caption-emoji-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            insertCaptionEmoji(btn.dataset.emoji || '');
+        });
+    });
+}
+
+function toggleCaptionEmojiMenu(event, targetId) {
+    event.preventDefault();
+    event.stopPropagation();
+    activeCaptionTargetId = targetId;
+    renderCaptionEmojiGrid();
+    var menu = document.getElementById('caption-emoji-menu');
+    if (!menu) return;
+
+    var isOpen = !menu.classList.contains('d-none') && menu.dataset.targetId === targetId;
+    if (isOpen) {
+        menu.classList.add('d-none');
+        return;
+    }
+
+    var rect = event.currentTarget.getBoundingClientRect();
+    menu.style.left = Math.max(8, rect.left - 10) + 'px';
+    menu.style.top = Math.max(8, rect.bottom + 8) + 'px';
+    menu.dataset.targetId = targetId;
+    menu.classList.remove('d-none');
+}
+
+function insertCaptionEmoji(emoji) {
+    if (!activeCaptionTargetId) return;
+    var el = document.getElementById(activeCaptionTargetId);
+    if (!el) return;
+    el.value = (el.value || '') + emoji;
+    el.focus();
+    var menu = document.getElementById('caption-emoji-menu');
+    if (menu) menu.classList.add('d-none');
+}
+
+document.addEventListener('click', async function (event) {
+    var likeBtn = event.target.closest('.like-btn');
+    if (likeBtn) {
+        event.preventDefault();
+        var postId = likeBtn.dataset.postId;
+        var icon = likeBtn.querySelector('i');
+        var likesSpan = document.getElementById('likes-' + postId);
+        try {
+            var likeData = await apiPost('/api/like/' + postId + '/', '{}', true);
+            if (likeData.liked) {
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+                icon.style.color = '#FF6B6B';
+            } else {
+                icon.classList.remove('fas');
+                icon.classList.add('far');
+                icon.style.color = '';
+            }
+            if (likesSpan) likesSpan.textContent = likeData.likes_count;
+        } catch (err) {
+            showToast(err.message || 'Error liking post', 'error');
+        }
+        return;
+    }
+
+    var saveBtn = event.target.closest('.save-btn');
+    if (saveBtn) {
+        event.preventDefault();
+        var savePostId = saveBtn.dataset.postId;
+        var saveIcon = saveBtn.querySelector('i');
+        try {
+            var saveData = await apiPost('/api/save/' + savePostId + '/');
+            if (saveData.saved) {
+                saveIcon.classList.remove('far');
+                saveIcon.classList.add('fas');
+                showToast('Post saved', 'success');
+            } else {
+                saveIcon.classList.remove('fas');
+                saveIcon.classList.add('far');
+                showToast('Post removed from saved', 'success');
+            }
+        } catch (err2) {
+            showToast(err2.message || 'Error saving post', 'error');
+        }
+        return;
+    }
+
+    var followBtn = event.target.closest('.follow-btn');
+    if (followBtn) {
+        event.preventDefault();
+        var userId = followBtn.dataset.userId;
+        if (!userId) return;
+        var originalText = followBtn.textContent.trim();
+        followBtn.textContent = '...';
+        followBtn.disabled = true;
+        try {
+            var followData = await apiPost('/api/follow/' + userId + '/');
+            if (followData.following) {
+                followBtn.textContent = 'Following';
+                followBtn.style.background = 'transparent';
+                followBtn.style.border = '1px solid #dbdbdb';
+                followBtn.style.color = '#262626';
+            } else {
+                followBtn.textContent = 'Follow';
+                followBtn.style.background = '#0095f6';
+                followBtn.style.border = 'none';
+                followBtn.style.color = '#ffffff';
+            }
+        } catch (err3) {
+            followBtn.textContent = originalText;
+            showToast(err3.message || 'Error following user', 'error');
+        } finally {
+            followBtn.disabled = false;
+        }
+    }
+});
+
+var createPostForm = document.getElementById('create-post-form');
+if (createPostForm) {
+    createPostForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        try {
+            await apiPost('/api/post/create/', new FormData(createPostForm));
+            showToast('Post created successfully!', 'success');
+            setTimeout(function () { location.reload(); }, 900);
+        } catch (err) {
+            showToast(err.message || 'Error creating post', 'error');
+        }
+    });
+}
+
+function previewStory(input) {
+    if (!(input && input.files && input.files[0])) return;
+    var file = input.files[0];
+    var preview = document.getElementById('story-preview');
+    var uploadArea = document.querySelector('#createStoryModal .upload-area');
+    if (!preview || !uploadArea) return;
+    uploadArea.classList.add('d-none');
+    preview.classList.remove('d-none');
+    var img = preview.querySelector('img');
+    var video = preview.querySelector('video');
+    var url = URL.createObjectURL(file);
+    if (file.type.indexOf('video/') === 0) {
+        if (video) { video.src = url; video.classList.remove('d-none'); }
+        if (img) img.classList.add('d-none');
+    } else {
+        if (img) { img.src = url; img.classList.remove('d-none'); }
+        if (video) video.classList.add('d-none');
+    }
+}
+
+function removeStory() {
+    var preview = document.getElementById('story-preview');
+    var uploadArea = document.querySelector('#createStoryModal .upload-area');
+    var input = document.getElementById('story-file');
+    if (preview) preview.classList.add('d-none');
+    if (uploadArea) uploadArea.classList.remove('d-none');
+    if (input) input.value = '';
+}
+
+async function shareStory() {
+    var input = document.getElementById('story-file');
+    if (!(input && input.files && input.files[0])) {
+        showToast('Please select a story image or video.', 'error');
+        return;
+    }
+    var formData = new FormData();
+    formData.append('story', input.files[0]);
+    var storyCaptionEl = document.getElementById('story-caption');
+    formData.append('content', storyCaptionEl ? storyCaptionEl.value.trim() : '');
+    var storyLocationEl = document.getElementById('story-location');
+    formData.append('location', storyLocationEl ? storyLocationEl.value.trim() : '');
+    try {
+        await apiPost('/api/story/create/', formData);
+        showToast('Story shared!', 'success');
+        setTimeout(function () { location.reload(); }, 700);
+    } catch (err) {
+        showToast(err.message || 'Error sharing story', 'error');
+    }
+}
+
+function previewReel(input) {
+    if (!(input && input.files && input.files[0])) return;
+    var file = input.files[0];
+    if (file.type.indexOf('video/') !== 0) {
+        showToast('Please select a video file.', 'error');
+        input.value = '';
+        return;
+    }
+    var uploadArea = document.querySelector('#createReelModal .upload-area');
+    var preview = document.getElementById('reel-preview');
+    var video = preview ? preview.querySelector('video') : null;
+    if (!uploadArea || !preview || !video) return;
+    video.src = URL.createObjectURL(file);
+    uploadArea.classList.add('d-none');
+    preview.classList.remove('d-none');
+}
+
+function removeReel() {
+    var uploadArea = document.querySelector('#createReelModal .upload-area');
+    var preview = document.getElementById('reel-preview');
+    var video = preview ? preview.querySelector('video') : null;
+    var input = document.getElementById('reel-file');
+    if (video) { video.pause(); video.removeAttribute('src'); video.load(); }
+    if (preview) preview.classList.add('d-none');
+    if (uploadArea) uploadArea.classList.remove('d-none');
+    if (input) input.value = '';
+}
+
+async function shareReel() {
+    var input = document.getElementById('reel-file');
+    if (!(input && input.files && input.files[0])) {
+        showToast('Please select a reel video.', 'error');
+        return;
+    }
+    var formData = new FormData();
+    formData.append('reel', input.files[0]);
+    var reelCaptionEl = document.getElementById('reel-caption');
+    formData.append('content', reelCaptionEl ? reelCaptionEl.value.trim() : '');
+    var reelLocationEl = document.getElementById('reel-location');
+    formData.append('location', reelLocationEl ? reelLocationEl.value.trim() : '');
+    try {
+        await apiPost('/api/reel/create/', formData);
+        showToast('Reel shared!', 'success');
+        setTimeout(function () { location.reload(); }, 700);
+    } catch (err) {
+        showToast(err.message || 'Error sharing reel', 'error');
+    }
+}
+
+function startLive() {
+    var modalEl = document.getElementById('createLiveModal');
+    var instance = modalEl ? bootstrap.Modal.getInstance(modalEl) : null;
+    if (instance) instance.hide();
+    window.location.href = '/live/';
+}
+
+function openStory(storyId) {
+    var modalEl = document.getElementById('storyViewerModal');
+    if (!modalEl) return;
+    var modal = new bootstrap.Modal(modalEl);
+    modal.show();
+    currentStoryId = storyId;
+    fetch('/api/story/' + storyId + '/', { credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            var username = document.getElementById('story-username');
+            var time = document.getElementById('story-time');
+            var location = document.getElementById('story-location');
+            var deleteBtn = document.getElementById('story-delete-btn');
+            var image = document.getElementById('story-image');
+            var video = document.getElementById('story-video');
+            if (username) username.textContent = data.user.username;
+            if (time) time.textContent = data.time_ago;
+            if (location) location.textContent = data.location || '';
+            currentStoryOwnerId = data.user.id;
+            if (deleteBtn) {
+                if (Number(data.user.id) === myUserId) deleteBtn.classList.remove('d-none');
+                else deleteBtn.classList.add('d-none');
+            }
+            if (data.media_type === 'video') {
+                if (video) { video.src = data.media_url; video.classList.remove('d-none'); }
+                if (image) image.classList.add('d-none');
+            } else {
+                if (image) { image.src = data.media_url; image.classList.remove('d-none'); }
+                if (video) video.classList.add('d-none');
+            }
+            apiPost('/api/story/' + storyId + '/view/').catch(function () {});
+        })
+        .catch(function () {
+            showToast('Unable to open story', 'error');
+        });
+}
+
+function deleteCurrentStory() {
+    if (!currentStoryId || Number(currentStoryOwnerId) !== myUserId) return;
+    if (!confirm('Delete this story?')) return;
+    apiPost('/api/story/' + currentStoryId + '/delete/')
+        .then(function () {
+            showToast('Story deleted', 'success');
+            var modalEl = document.getElementById('storyViewerModal');
+            var instance = modalEl ? bootstrap.Modal.getInstance(modalEl) : null;
+            if (instance) instance.hide();
+            setTimeout(function () { location.reload(); }, 500);
+        })
+        .catch(function (err) {
+            showToast(err.message || 'Unable to delete story', 'error');
+        });
+}
+
+function addComment(input, postId) {
+    var comment = input ? input.value.trim() : '';
+    if (!comment) return;
+    apiPost('/api/post/' + postId + '/comment/', JSON.stringify({ content: comment }), true)
+        .then(function () {
+            input.value = '';
+            showToast('Comment added', 'success');
+        })
+        .catch(function (err) {
+            showToast(err.message || 'Error adding comment', 'error');
+        });
+}
+
+function commentOnPost(postId) {
+    var input = document.querySelector('#post-' + postId + ' input[placeholder=\"Add a comment...\"]');
+    if (!input) return;
+    input.focus();
+}
+
+function viewAllComments(postId) { commentOnPost(postId); }
+async function editPost(postId) {
+    try {
+        var current = await fetch('/api/post/' + postId + '/', { credentials: 'same-origin' }).then(function(r){ return r.json(); });
+        var newContent = window.prompt('Edit caption', current.content || '');
+        if (newContent === null) return;
+        var currentLocationNode = document.querySelector('#post-' + postId + ' .card-header .text-muted.small');
+        var currentLocation = currentLocationNode ? currentLocationNode.textContent.trim() : '';
+        var newLocation = window.prompt('Edit location', currentLocation);
+        if (newLocation === null) return;
+
+        var data = await apiPost('/api/post/' + postId + '/update/', JSON.stringify({
+            content: newContent,
+            location: newLocation
+        }), true);
+
+        var captionNode = document.querySelector('#post-' + postId + ' .card-body .small.mb-2 span:last-child');
+        if (captionNode) captionNode.textContent = data.content || '';
+        if (currentLocationNode) currentLocationNode.textContent = data.location || '';
+        showToast('Post updated', 'success');
+    } catch (err) {
+        showToast(err.message || 'Unable to update post', 'error');
+    }
+}
+function reportPost() { showToast('Post reported', 'success'); }
+function addToFavorites() { showToast('Updated favorites', 'success'); }
+function changeStory() { showToast('No more stories', 'error'); }
+function sendStoryReply() { showToast('Reply sent', 'success'); }
+
+function sharePost(postId) {
+    var url = window.location.origin + '/post/' + postId + '/';
+    if (navigator.share) {
+        navigator.share({ title: 'Check this post', url: url }).catch(function () {});
+    } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(function () { showToast('Link copied', 'success'); });
+    }
+}
+
+function unfollowUser(userId) {
+    apiPost('/api/follow/' + userId + '/')
+        .then(function () { showToast('Follow status updated', 'success'); })
+        .catch(function (err) { showToast(err.message || 'Unable to update follow', 'error'); });
+}
+
+function deletePost(postId) {
+    if (!confirm('Delete this post?')) return;
+    apiPost('/api/post/' + postId + '/delete/')
+        .then(function () {
+            var node = document.getElementById('post-' + postId);
+            if (node) node.remove();
+            showToast('Post deleted', 'success');
+        })
+        .catch(function (err) {
+            showToast(err.message || 'Unable to delete post', 'error');
+        });
+}
+
+document.addEventListener('click', function (event) {
+    var menu = document.getElementById('caption-emoji-menu');
+    if (!menu || menu.classList.contains('d-none')) return;
+    if (!menu.contains(event.target)) {
+        menu.classList.add('d-none');
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('open_create') === '1') {
+        var createModalEl = document.getElementById('createModal');
+        if (createModalEl) {
+            new bootstrap.Modal(createModalEl).show();
+        }
+    }
+});
+</script>
+{% endblock %}

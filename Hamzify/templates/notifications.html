@@ -1,0 +1,769 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Notifications • Connectify{% endblock %}
+
+{% block content %}
+<div class="mb-2">
+    {% include 'includes/logo_only.html' %}
+</div>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-7 mx-auto">
+            <!-- Notifications Header - Instagram Style -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-0" style="font-size: 24px;">Notifications</h2>
+                    <p class="text-muted small mb-0">Stay updated with your activity</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button id="filter-btn" class="btn btn-light rounded-circle p-2" style="width: 40px; height: 40px;" data-bs-toggle="dropdown">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3 p-2">
+                        <li><a class="dropdown-item rounded-2 py-2" href="#" data-filter="all"><i class="fas fa-bell me-2"></i>All</a></li>
+                        <li><a class="dropdown-item rounded-2 py-2" href="#" data-filter="likes"><i class="fas fa-heart me-2" style="color: #FF6B6B;"></i>Likes</a></li>
+                        <li><a class="dropdown-item rounded-2 py-2" href="#" data-filter="comments"><i class="fas fa-comment me-2" style="color: #4ECDC4;"></i>Comments</a></li>
+                        <li><a class="dropdown-item rounded-2 py-2" href="#" data-filter="follows"><i class="fas fa-user-plus me-2" style="color: #4CAF50;"></i>Follows</a></li>
+                        <li><a class="dropdown-item rounded-2 py-2" href="#" data-filter="mentions"><i class="fas fa-at me-2" style="color: #9C27B0;"></i>Mentions</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item rounded-2 py-2" href="#" data-filter="unread"><i class="fas fa-envelope me-2"></i>Unread</a></li>
+                    </ul>
+                    
+                    <button id="mark-read-btn" class="btn btn-primary rounded-pill px-4" style="background: linear-gradient(135deg, #FF6B6B, #4ECDC4); border: none;">
+                        <i class="fas fa-check-double me-2"></i>Mark all read
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notifications Tabs -->
+            <ul class="nav nav-tabs border-0 mb-4" id="notificationTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active border-0 bg-transparent px-3 py-2" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+                        <span class="fw-semibold">All</span>
+                        <span class="badge bg-light text-dark ms-2 rounded-pill" id="all-count">{{ notifications|length }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link border-0 bg-transparent px-3 py-2" id="unread-tab" data-bs-toggle="tab" data-bs-target="#unread" type="button" role="tab">
+                        <span class="fw-semibold">Unread</span>
+                        <span class="badge bg-light text-dark ms-2 rounded-pill" id="unread-count">{{ unread_count|default:0 }}</span>
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Notifications List -->
+            <div class="tab-content" id="notificationTabContent">
+                <!-- All Notifications Tab -->
+                <div class="tab-pane fade show active" id="all" role="tabpanel">
+                    <div id="notif-list" class="notif-list">
+                        {% for note in notifications %}
+                        <div class="card border-0 rounded-3 mb-3 notification-card {% if not note.is_read %}unread border-start border-4{% endif %}" 
+                             style="border-left-color: {% if not note.is_read %}#FF6B6B{% endif %} !important; box-shadow: 0 2px 8px rgba(0,0,0,0.03);"
+                             data-notification-id="{{ note.id }}"
+                             data-type="{{ note.type }}"
+                             data-read="{{ note.is_read }}">
+                            <div class="card-body p-3">
+                                <div class="d-flex gap-3">
+                                    <!-- Notification Icon/Avatar -->
+                                    <div class="position-relative">
+                                        {% if note.type == 'like' %}
+                                        <div class="rounded-circle overflow-hidden" style="width: 48px; height: 48px;">
+                                            {% if note.actor.profile_pic %}
+                                            <img src="{{ note.actor.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                            {% else %}
+                                            <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center">
+                                                <span class="fw-bold fs-5">{{ note.actor.username|first|upper }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="position-absolute bottom-0 end-0 bg-white rounded-circle p-1" style="width: 20px; height: 20px;">
+                                            <i class="fas fa-heart fa-xs" style="color: #FF6B6B;"></i>
+                                        </div>
+                                        
+                                        {% elif note.type == 'comment' %}
+                                        <div class="rounded-circle overflow-hidden" style="width: 48px; height: 48px;">
+                                            {% if note.actor.profile_pic %}
+                                            <img src="{{ note.actor.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                            {% else %}
+                                            <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center">
+                                                <span class="fw-bold fs-5">{{ note.actor.username|first|upper }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="position-absolute bottom-0 end-0 bg-white rounded-circle p-1" style="width: 20px; height: 20px;">
+                                            <i class="fas fa-comment fa-xs" style="color: #4ECDC4;"></i>
+                                        </div>
+                                        
+                                        {% elif note.type == 'follow' %}
+                                        <div class="rounded-circle overflow-hidden" style="width: 48px; height: 48px;">
+                                            {% if note.actor.profile_pic %}
+                                            <img src="{{ note.actor.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                            {% else %}
+                                            <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center">
+                                                <span class="fw-bold fs-5">{{ note.actor.username|first|upper }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="position-absolute bottom-0 end-0 bg-white rounded-circle p-1" style="width: 20px; height: 20px;">
+                                            <i class="fas fa-user-plus fa-xs" style="color: #4CAF50;"></i>
+                                        </div>
+                                        
+                                        {% elif note.type == 'mention' %}
+                                        <div class="rounded-circle overflow-hidden" style="width: 48px; height: 48px;">
+                                            {% if note.actor.profile_pic %}
+                                            <img src="{{ note.actor.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                            {% else %}
+                                            <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center">
+                                                <span class="fw-bold fs-5">{{ note.actor.username|first|upper }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="position-absolute bottom-0 end-0 bg-white rounded-circle p-1" style="width: 20px; height: 20px;">
+                                            <i class="fas fa-at fa-xs" style="color: #9C27B0;"></i>
+                                        </div>
+                                        
+                                        {% elif note.type == 'tag' %}
+                                        <div class="rounded-circle overflow-hidden" style="width: 48px; height: 48px;">
+                                            {% if note.actor.profile_pic %}
+                                            <img src="{{ note.actor.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                            {% else %}
+                                            <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center">
+                                                <span class="fw-bold fs-5">{{ note.actor.username|first|upper }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="position-absolute bottom-0 end-0 bg-white rounded-circle p-1" style="width: 20px; height: 20px;">
+                                            <i class="fas fa-tag fa-xs" style="color: #FF6B6B;"></i>
+                                        </div>
+                                        
+                                        {% elif note.type == 'repost' %}
+                                        <div class="rounded-circle overflow-hidden" style="width: 48px; height: 48px;">
+                                            {% if note.actor.profile_pic %}
+                                            <img src="{{ note.actor.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                            {% else %}
+                                            <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center">
+                                                <span class="fw-bold fs-5">{{ note.actor.username|first|upper }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="position-absolute bottom-0 end-0 bg-white rounded-circle p-1" style="width: 20px; height: 20px;">
+                                            <i class="fas fa-retweet fa-xs" style="color: #4ECDC4;"></i>
+                                        </div>
+                                        
+                                        {% else %}
+                                        <div class="rounded-circle overflow-hidden" style="width: 48px; height: 48px;">
+                                            {% if note.actor.profile_pic %}
+                                            <img src="{{ note.actor.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                            {% else %}
+                                            <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center">
+                                                <span class="fw-bold fs-5">{{ note.actor.username|first|upper }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="position-absolute bottom-0 end-0 bg-white rounded-circle p-1" style="width: 20px; height: 20px;">
+                                            <i class="fas fa-bell fa-xs" style="color: #262626;"></i>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Notification Content -->
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <p class="mb-1">
+                                                    <a href="{% url 'profile' username=note.actor.username %}" class="fw-bold text-dark text-decoration-none">
+                                                        {{ note.actor.username }}
+                                                    </a>
+                                                    <span class="text-dark">{{ note.message }}</span>
+                                                </p>
+                                                
+                                                <!-- Post Preview (if applicable) -->
+                                                {% if note.post %}
+                                                <div class="d-flex align-items-center gap-2 mt-2">
+                                                    {% if note.post.image %}
+                                                    <img src="{{ note.post.image.url }}" class="rounded-2" style="width: 44px; height: 44px; object-fit: cover;">
+                                                    {% endif %}
+                                                    <span class="small text-muted">{{ note.post.content|truncatechars:60 }}</span>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                <!-- Time -->
+                                                <div class="d-flex align-items-center gap-2 mt-2">
+                                                    <span class="small text-muted">{{ note.created_at|timesince }} ago</span>
+                                                    {% if not note.is_read %}
+                                                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2" style="font-size: 10px;">New</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Action Buttons -->
+                                            <div class="d-flex gap-2">
+                                                {% if note.type == 'follow' %}
+                                                <button class="btn btn-sm btn-primary rounded-pill px-3 follow-back-btn" 
+                                                        data-user-id="{{ note.actor.id }}"
+                                                        style="background: #0095f6; border: none;">
+                                                    Follow Back
+                                                </button>
+                                                {% endif %}
+                                                
+                                                <div class="dropdown">
+                                                    <button class="btn btn-link text-dark p-0" data-bs-toggle="dropdown">
+                                                        <i class="fas fa-ellipsis-h"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3 p-2">
+                                                        <li><a class="dropdown-item rounded-2 py-2" href="#" onclick="markAsRead({{ note.id }})"><i class="fas fa-check me-2"></i>Mark as read</a></li>
+                                                        <li><a class="dropdown-item rounded-2 py-2" href="#" onclick="hideNotification({{ note.id }})"><i class="fas fa-eye-slash me-2"></i>Hide</a></li>
+                                                        <li><a class="dropdown-item rounded-2 py-2 text-danger" href="#" onclick="turnOffNotifications({{ note.actor.id }})"><i class="fas fa-bell-slash me-2"></i>Turn off notifications</a></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center p-4" style="width: 120px; height: 120px;">
+                                    <i class="fas fa-bell fa-4x" style="color: #ddd;"></i>
+                                </div>
+                            </div>
+                            <h5 class="fw-bold mb-2">No notifications yet</h5>
+                            <p class="text-muted small">When someone interacts with your posts, you'll see it here.</p>
+                            <a href="{% url 'explore' %}" class="btn btn-primary rounded-pill px-4 mt-3" style="background: #0095f6; border: none;">
+                                Explore People
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Unread Tab -->
+                <div class="tab-pane fade" id="unread" role="tabpanel">
+                    <div id="unread-notif-list" class="notif-list">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Load More Button -->
+            {% if notifications.has_next %}
+            <div class="text-center mt-4">
+                <button class="btn btn-light rounded-pill px-5" onclick="loadMoreNotifications()" id="load-more-btn">
+                    <span class="spinner-border spinner-border-sm d-none me-2" id="load-more-spinner"></span>
+                    Load More
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Sidebar - Notification Settings -->
+        <div class="col-lg-4 d-none d-lg-block">
+            <div class="card border-0 rounded-3 p-3" style="box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <h6 class="fw-bold mb-3">Notification Settings</h6>
+                
+                <div class="notification-settings">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="fw-semibold small">Push Notifications</span>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="pushNotifications" checked>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="fw-semibold small">Email Notifications</span>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="fw-semibold small">SMS Notifications</span>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="smsNotifications">
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="my-3">
+                
+                <h6 class="fw-bold mb-3">Notification Types</h6>
+                
+                <div class="notification-types">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-heart" style="color: #FF6B6B;"></i>
+                            <span class="small">Likes</span>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="likesNotifications" checked>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-comment" style="color: #4ECDC4;"></i>
+                            <span class="small">Comments</span>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="commentsNotifications" checked>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-user-plus" style="color: #4CAF50;"></i>
+                            <span class="small">Follows</span>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="followsNotifications" checked>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-at" style="color: #9C27B0;"></i>
+                            <span class="small">Mentions</span>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="mentionsNotifications" checked>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="my-3">
+                
+                <a href="#" class="text-decoration-none small" style="color: #FF6B6B;">
+                    <i class="fas fa-cog me-2"></i>Advanced Settings
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+<style>
+    .notification-card {
+        transition: all 0.3s ease;
+    }
+    .notification-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 12px rgba(255,107,107,0.1) !important;
+    }
+    .notification-card.unread {
+        background: linear-gradient(to right, rgba(255,107,107,0.02), transparent);
+    }
+    .nav-tabs .nav-link {
+        color: #262626;
+        position: relative;
+    }
+    .nav-tabs .nav-link.active {
+        color: #FF6B6B;
+    }
+    .nav-tabs .nav-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+    }
+    .toast-container {
+        z-index: 9999;
+    }
+    .toast {
+        animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+</style>
+
+{% endblock %}
+
+{% block page_js %}
+<script>
+// CSRF Token Helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Toast Notification
+function showToast(message, type = 'success') {
+    const container = document.querySelector('.toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type} border-0 show`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    container.appendChild(toast);
+    
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// Mark all as read
+document.getElementById("mark-read-btn")?.addEventListener("click", async () => {
+    const btn = document.getElementById("mark-read-btn");
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Loading...';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch("/api/notifications/mark-read/", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken"),
+                "Content-Type": "application/json"
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to mark all as read');
+        
+        document.querySelectorAll(".notification-card").forEach(i => {
+            i.classList.remove("unread");
+            i.style.borderLeftColor = '';
+        });
+        
+        // Update counts
+        document.getElementById('unread-count').textContent = '0';
+        document.querySelectorAll('[data-type="unread"] .badge').forEach(badge => {
+            badge.textContent = '0';
+        });
+        
+        showToast('All notifications marked as read', 'success');
+        refreshNotificationBadge(); // Function to update navbar badge
+    } catch (error) {
+        showToast('Failed to mark notifications as read', 'danger');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+});
+
+// Mark individual notification as read
+function markAsRead(notificationId) {
+    fetch(`/api/notifications/${notificationId}/mark-read/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCookie("csrftoken")
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            const card = document.querySelector(`[data-notification-id="${notificationId}"]`);
+            card.classList.remove("unread");
+            card.style.borderLeftColor = '';
+            
+            // Update unread count
+            const unreadCount = document.getElementById('unread-count');
+            unreadCount.textContent = parseInt(unreadCount.textContent) - 1;
+            
+            showToast('Notification marked as read', 'success');
+            refreshNotificationBadge();
+        }
+    });
+}
+
+// Hide notification
+function hideNotification(notificationId) {
+    if (confirm('Hide this notification?')) {
+        fetch(`/api/notifications/${notificationId}/hide/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                document.querySelector(`[data-notification-id="${notificationId}"]`).remove();
+                showToast('Notification hidden', 'success');
+            }
+        });
+    }
+}
+
+// Turn off notifications for user
+function turnOffNotifications(userId) {
+    if (confirm('Turn off notifications from this user?')) {
+        fetch(`/api/notifications/turn-off/${userId}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                showToast('Notifications turned off', 'success');
+            }
+        });
+    }
+}
+
+// Follow back functionality
+document.querySelectorAll('.follow-back-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const userId = this.dataset.userId;
+        const originalText = this.textContent;
+        
+        this.textContent = '...';
+        this.disabled = true;
+        
+        try {
+            const response = await fetch(`/api/follow/${userId}/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken")
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.following) {
+                this.textContent = 'Following';
+                this.classList.remove('btn-primary');
+                this.classList.add('btn-outline-secondary');
+            } else {
+                this.textContent = 'Follow';
+            }
+            
+            showToast(data.following ? 'Following' : 'Unfollowed', 'success');
+        } catch (error) {
+            this.textContent = originalText;
+            showToast('Error', 'danger');
+        } finally {
+            this.disabled = false;
+        }
+    });
+});
+
+// Filter notifications
+document.querySelectorAll('[data-filter]').forEach(filter => {
+    filter.addEventListener('click', (e) => {
+        e.preventDefault();
+        const filterType = e.target.closest('[data-filter]').dataset.filter;
+        
+        document.querySelectorAll('.notification-card').forEach(card => {
+            if (filterType === 'all') {
+                card.style.display = 'block';
+            } else if (filterType === 'unread') {
+                card.style.display = card.dataset.read === 'False' ? 'block' : 'none';
+            } else {
+                card.style.display = card.dataset.type === filterType ? 'block' : 'none';
+            }
+        });
+        
+        showToast(`Showing ${filterType} notifications`, 'info');
+    });
+});
+
+// Load unread notifications in tab
+document.getElementById('unread-tab').addEventListener('click', async () => {
+    const unreadList = document.getElementById('unread-notif-list');
+    unreadList.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary"></div></div>';
+    
+    try {
+        const response = await fetch('/api/notifications/unread/');
+        const notifications = await response.json();
+        
+        if (notifications.length === 0) {
+            unreadList.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center p-4" style="width: 120px; height: 120px;">
+                            <i class="fas fa-bell-slash fa-4x" style="color: #ddd;"></i>
+                        </div>
+                    </div>
+                    <h6 class="fw-bold mb-2">All caught up!</h6>
+                    <p class="text-muted small">No unread notifications</p>
+                </div>
+            `;
+        } else {
+            // Render unread notifications
+            unreadList.innerHTML = notifications.map(note => createNotificationHTML(note)).join('');
+        }
+    } catch (error) {
+        unreadList.innerHTML = '<p class="text-danger text-center">Error loading notifications</p>';
+    }
+});
+
+// Helper function to create notification HTML
+function createNotificationHTML(note) {
+    return `
+        <div class="card border-0 rounded-3 mb-3 notification-card unread" 
+             data-notification-id="${note.id}"
+             data-type="${note.type}">
+            <div class="card-body p-3">
+                <div class="d-flex gap-3">
+                    <div class="position-relative">
+                        <div class="rounded-circle overflow-hidden" style="width: 48px; height: 48px;">
+                            ${note.actor.profile_pic 
+                                ? `<img src="${note.actor.profile_pic}" class="w-100 h-100 object-fit-cover">`
+                                : `<div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center">
+                                    <span class="fw-bold fs-5">${note.actor.username[0].toUpperCase()}</span>
+                                   </div>`
+                            }
+                        </div>
+                        <div class="position-absolute bottom-0 end-0 bg-white rounded-circle p-1" style="width: 20px; height: 20px;">
+                            <i class="fas fa-${note.icon} fa-xs" style="color: ${note.icon_color};"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow-1">
+                        <p class="mb-1">
+                            <a href="/profile/${encodeURIComponent(note.actor.username)}/" class="fw-bold text-dark text-decoration-none">
+                                ${note.actor.username}
+                            </a>
+                            <span class="text-dark">${note.message}</span>
+                        </p>
+                        <span class="small text-muted">${note.time_ago}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Load more notifications
+let currentPage = 1;
+async function loadMoreNotifications() {
+    const btn = document.getElementById('load-more-btn');
+    const spinner = document.getElementById('load-more-spinner');
+    
+    btn.disabled = true;
+    spinner.classList.remove('d-none');
+    currentPage++;
+    
+    try {
+        const response = await fetch(`/api/notifications/?page=${currentPage}`);
+        const data = await response.json();
+        
+        if (data.notifications.length > 0) {
+            const notifList = document.getElementById('notif-list');
+            data.notifications.forEach(note => {
+                notifList.insertAdjacentHTML('beforeend', createNotificationHTML(note));
+            });
+        } else {
+            btn.remove();
+        }
+    } catch (error) {
+        showToast('Error loading more notifications', 'danger');
+    } finally {
+        btn.disabled = false;
+        spinner.classList.add('d-none');
+    }
+}
+
+// Real-time notifications (WebSocket)
+let notificationSocket = null;
+
+function connectNotificationSocket() {
+    if (window.location.pathname.includes('notifications')) {
+        notificationSocket = new WebSocket(
+            'ws://' + window.location.host + '/ws/notifications/'
+        );
+        
+        notificationSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            
+            // Add new notification to list
+            const notifList = document.getElementById('notif-list');
+            notifList.insertAdjacentHTML('afterbegin', createNotificationHTML(data.notification));
+            
+            // Show toast
+            showToast(`New notification from ${data.notification.actor.username}`, 'info');
+            
+            // Update badge
+            refreshNotificationBadge();
+            
+            // Play sound
+            playNotificationSound();
+        };
+    }
+}
+
+// Play notification sound
+function playNotificationSound() {
+    const audio = new Audio('/static/sounds/notification.mp3');
+    audio.play().catch(e => console.log('Audio play failed:', e));
+}
+
+// Refresh notification badge in navbar
+function refreshNotificationBadge() {
+    const badge = document.querySelector('.notification-badge');
+    if (badge) {
+        fetch('/api/notifications/unread-count/')
+            .then(response => response.json())
+            .then(data => {
+                badge.textContent = data.count;
+                badge.style.display = data.count > 0 ? 'inline' : 'none';
+            });
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    connectNotificationSocket();
+    
+    // Add animation to notifications
+    const cards = document.querySelectorAll('.notification-card');
+    cards.forEach((card, index) => {
+        card.style.animation = `slideIn 0.3s ease ${index * 0.05}s forwards`;
+        card.style.opacity = '0';
+    });
+    
+    // Update unread count
+    refreshNotificationBadge();
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    // 'm' key to mark all as read
+    if (e.key === 'm' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        document.getElementById('mark-read-btn')?.click();
+    }
+    
+    // 'f' key to focus filter
+    if (e.key === 'f' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        document.querySelector('[data-bs-toggle="dropdown"]')?.click();
+    }
+});
+</script>
+{% endblock %}

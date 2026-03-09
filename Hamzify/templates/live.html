@@ -1,0 +1,852 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Live • Connectify{% endblock %}
+
+{% block content %}
+<!-- Live Container -->
+<div class="live-container">
+    <!-- Live Header -->
+    <div class="live-header position-fixed top-0 start-0 w-100 p-3" style="z-index: 1000; background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3">
+                    <a href="{% url 'home' %}" class="text-white text-decoration-none">
+                        <i class="fas fa-arrow-left fa-lg"></i>
+                    </a>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="live-badge bg-danger text-white px-3 py-1 rounded-pill fw-semibold" style="font-size: 14px;">
+                            <i class="fas fa-circle me-2" style="font-size: 8px;"></i>LIVE
+                        </span>
+                        <span class="text-white" id="viewer-count">0 watching</span>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-dark bg-opacity-50 text-white border-0 rounded-circle p-2" style="width: 40px; height: 40px;" onclick="toggleCamera()">
+                        <i class="fas fa-video" id="camera-icon"></i>
+                    </button>
+                    <button class="btn btn-dark bg-opacity-50 text-white border-0 rounded-circle p-2" style="width: 40px; height: 40px;" onclick="toggleMic()">
+                        <i class="fas fa-microphone" id="mic-icon"></i>
+                    </button>
+                    <button class="btn btn-dark bg-opacity-50 text-white border-0 rounded-circle p-2" style="width: 40px; height: 40px;" onclick="toggleSettings()">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Live Area -->
+    <div class="live-main position-relative vh-100 d-flex align-items-center justify-content-center bg-black">
+        <!-- Video Container -->
+        <div class="position-relative w-100 h-100" id="video-container">
+            <!-- Host Video -->
+            <video id="host-video" class="w-100 h-100 object-fit-cover" autoplay muted playsinline></video>
+            
+            <!-- Guest Video (if any) -->
+            <div id="guest-video-container" class="position-absolute bottom-0 end-0 m-4 rounded-3 overflow-hidden shadow-lg" 
+                 style="width: 200px; height: 300px; display: none;">
+                <video id="guest-video" class="w-100 h-100 object-fit-cover" autoplay playsinline></video>
+                <div class="position-absolute top-0 start-0 m-2 bg-dark bg-opacity-50 text-white rounded-pill px-2 py-1 small">
+                    Guest
+                </div>
+            </div>
+
+            <!-- Live Comments Overlay -->
+            <div class="position-absolute top-50 end-0 translate-middle-y me-4" style="width: 300px; max-height: 400px; z-index: 10;">
+                <div class="live-comments bg-dark bg-opacity-50 rounded-3 p-3" style="backdrop-filter: blur(10px);">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-white mb-0">Live Chat</h6>
+                        <span class="text-white-50 small" id="comment-count">0</span>
+                    </div>
+                    
+                    <div class="comments-list" style="height: 300px; overflow-y: auto;" id="comments-list">
+                        <!-- Comments will appear here -->
+                        <div class="text-center text-white-50 py-4">
+                            <i class="fas fa-comment-dots fa-2x mb-2"></i>
+                            <p class="small mb-0">No comments yet</p>
+                            <p class="small">Be the first to comment!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-dark text-white border-0" 
+                                   placeholder="Send a message..." id="comment-input">
+                            <button class="btn btn-danger" type="button" onclick="sendComment()">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Reactions -->
+            <div class="position-absolute bottom-0 start-0 m-4 d-flex gap-2" style="z-index: 10;">
+                <button class="btn btn-dark bg-opacity-50 text-white border-0 rounded-circle p-3" onclick="sendReaction('❤️')">
+                    ❤️
+                </button>
+                <button class="btn btn-dark bg-opacity-50 text-white border-0 rounded-circle p-3" onclick="sendReaction('😂')">
+                    😂
+                </button>
+                <button class="btn btn-dark bg-opacity-50 text-white border-0 rounded-circle p-3" onclick="sendReaction('😮')">
+                    😮
+                </button>
+                <button class="btn btn-dark bg-opacity-50 text-white border-0 rounded-circle p-3" onclick="sendReaction('👏')">
+                    👏
+                </button>
+                <button class="btn btn-dark bg-opacity-50 text-white border-0 rounded-circle p-3" onclick="sendReaction('🔥')">
+                    🔥
+                </button>
+            </div>
+        </div>
+
+        <!-- Live Controls Overlay -->
+        <div class="position-absolute bottom-0 start-0 w-100 p-4" style="background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);">
+            <div class="container">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle overflow-hidden" style="width: 40px; height: 40px;">
+                                {% if request.user.profile_pic %}
+                                <img src="{{ request.user.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                {% else %}
+                                <div class="bg-primary text-white w-100 h-100 d-flex align-items-center justify-content-center">
+                                    <span class="fw-bold">{{ request.user.username|first|upper }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <span class="text-white fw-semibold">{{ request.user.username }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3">
+                        <button class="btn btn-outline-light rounded-pill px-4" onclick="inviteFollowers()">
+                            <i class="fas fa-user-plus me-2"></i>Invite
+                        </button>
+                        <button class="btn btn-danger rounded-pill px-4" onclick="endLive()">
+                            <i class="fas fa-stop-circle me-2"></i>End Live
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Side Panels (Visible on larger screens) -->
+    <div class="position-fixed top-0 end-0 h-100 bg-dark p-4 d-none d-xl-block" style="width: 350px; overflow-y: auto;">
+        <!-- Live Goals -->
+        <div class="mb-4">
+            <h6 class="text-white mb-3">Live Goals</h6>
+            <div class="bg-dark bg-opacity-50 rounded-3 p-3">
+                <div class="d-flex justify-content-between text-white-50 small mb-2">
+                    <span>👥 Viewers</span>
+                    <span id="goal-viewers">0/100</span>
+                </div>
+                <div class="progress mb-3" style="height: 6px;">
+                    <div class="progress-bar bg-danger" role="progressbar" style="width: 0%" id="viewer-progress"></div>
+                </div>
+                
+                <div class="d-flex justify-content-between text-white-50 small mb-2">
+                    <span>❤️ Likes</span>
+                    <span id="goal-likes">0/1000</span>
+                </div>
+                <div class="progress mb-3" style="height: 6px;">
+                    <div class="progress-bar bg-danger" role="progressbar" style="width: 0%" id="likes-progress"></div>
+                </div>
+                
+                <div class="d-flex justify-content-between text-white-50 small mb-2">
+                    <span>💬 Comments</span>
+                    <span id="goal-comments">0/500</span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar bg-danger" role="progressbar" style="width: 0%" id="comments-progress"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Viewers -->
+        <div class="mb-4">
+            <h6 class="text-white mb-3">Recent Viewers</h6>
+            <div class="recent-viewers" id="recent-viewers">
+                <!-- Will be populated dynamically -->
+                <div class="text-center text-white-50 py-4">
+                    <p class="small mb-0">Waiting for viewers...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Moderator Tools -->
+        <div>
+            <h6 class="text-white mb-3">Moderator Tools</h6>
+            <div class="list-group list-group-flush bg-transparent">
+                <button class="list-group-item bg-transparent text-white border-secondary" onclick="muteAll()">
+                    <i class="fas fa-microphone-slash me-2 text-danger"></i>Mute All
+                </button>
+                <button class="list-group-item bg-transparent text-white border-secondary" onclick="disableComments()">
+                    <i class="fas fa-comment-slash me-2 text-warning"></i>Disable Comments
+                </button>
+                <button class="list-group-item bg-transparent text-white border-secondary" onclick="addModerator()">
+                    <i class="fas fa-shield-alt me-2 text-info"></i>Add Moderator
+                </button>
+                <button class="list-group-item bg-transparent text-white border-secondary" onclick="reportUser()">
+                    <i class="fas fa-flag me-2 text-danger"></i>Report User
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pre-Go Live Modal -->
+<div class="modal fade" id="preLiveModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Go Live</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Camera Preview -->
+                <div class="camera-preview bg-dark rounded-3 mb-4 position-relative" style="height: 200px; overflow: hidden;">
+                    <video id="preview-video" class="w-100 h-100 object-fit-cover" autoplay muted playsinline></video>
+                    <div class="position-absolute top-0 start-0 m-2">
+                        <span class="badge bg-danger rounded-pill px-3 py-2">
+                            <i class="fas fa-circle me-2" style="font-size: 8px;"></i>Preview
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Live Settings -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Live Title</label>
+                    <input type="text" class="form-control rounded-3" placeholder="What's your live about?" id="live-title">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Category</label>
+                    <select class="form-select rounded-3" id="live-category">
+                        <option value="chat">Chat</option>
+                        <option value="gaming">Gaming</option>
+                        <option value="music">Music</option>
+                        <option value="sports">Sports</option>
+                        <option value="education">Education</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <!-- Privacy Settings -->
+                <div class="mb-4">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="notifyFollowers" checked>
+                        <label class="form-check-label small" for="notifyFollowers">
+                            Notify followers
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="allowComments" checked>
+                        <label class="form-check-label small" for="allowComments">
+                            Allow comments
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="saveLive">
+                        <label class="form-check-label small" for="saveLive">
+                            Save live video after ending
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Device Settings -->
+                <div class="device-settings bg-light rounded-3 p-3 mb-4">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="small fw-semibold">Camera</span>
+                        <select class="form-select form-select-sm w-auto" id="camera-select">
+                            <option>Default Camera</option>
+                        </select>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="small fw-semibold">Microphone</span>
+                        <select class="form-select form-select-sm w-auto" id="mic-select">
+                            <option>Default Microphone</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Go Live Button -->
+                <button class="btn btn-danger w-100 rounded-pill py-2 fw-semibold" onclick="startLive()" id="go-live-btn">
+                    <i class="fas fa-circle me-2" style="font-size: 10px;"></i>Go Live
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Invite Followers Modal -->
+<div class="modal fade" id="inviteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Invite Followers</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="search-users mb-3">
+                    <input type="text" class="form-control bg-light border-0 rounded-pill" 
+                           placeholder="Search followers..." id="search-followers">
+                </div>
+                
+                <div class="followers-list" style="max-height: 300px; overflow-y: auto;">
+                    {% for follower in followers %}
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle overflow-hidden" style="width: 44px; height: 44px;">
+                                {% if follower.profile_pic %}
+                                <img src="{{ follower.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                {% else %}
+                                <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center">
+                                    <span class="fw-bold">{{ follower.username|first|upper }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <span class="fw-semibold d-block">{{ follower.username }}</span>
+                                <small class="text-muted">{{ follower.followers_count }} followers</small>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger rounded-pill invite-btn" 
+                                data-user-id="{{ follower.id }}"
+                                onclick="inviteUser('{{ follower.id }}')">
+                            Invite
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Share Link -->
+                <div class="mt-4">
+                    <label class="form-label fw-semibold">Or share link</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control bg-light border-0" value="{{ live_link }}" id="live-link" readonly>
+                        <button class="btn btn-danger" onclick="copyLink()">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- End Live Confirmation Modal -->
+<div class="modal fade" id="endLiveModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">End Live Video?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="text-center mb-4">
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center p-4 mb-3">
+                        <i class="fas fa-stop-circle fa-3x text-danger"></i>
+                    </div>
+                    <h6 class="fw-bold">Live Summary</h6>
+                    <div class="row g-2 mt-3">
+                        <div class="col-4">
+                            <div class="fw-bold" id="summary-viewers">0</div>
+                            <small class="text-muted">Viewers</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="fw-bold" id="summary-likes">0</div>
+                            <small class="text-muted">Likes</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="fw-bold" id="summary-comments">0</div>
+                            <small class="text-muted">Comments</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button class="btn btn-light flex-grow-1 rounded-pill" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button class="btn btn-danger flex-grow-1 rounded-pill" onclick="confirmEndLive()">
+                        End Live
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .live-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: black;
+        overflow: hidden;
+    }
+
+    .comments-list::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .comments-list::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.1);
+    }
+
+    .comments-list::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.3);
+        border-radius: 2px;
+    }
+
+    .live-comment {
+        animation: slideIn 0.3s ease;
+        margin-bottom: 8px;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .reaction-animation {
+        position: absolute;
+        animation: floatUp 2s ease-out forwards;
+        font-size: 24px;
+        pointer-events: none;
+    }
+
+    @keyframes floatUp {
+        0% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        100% {
+            opacity: 0;
+            transform: translateY(-100px) scale(2);
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .live-comments {
+            width: 250px !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .live-comments {
+            display: none;
+        }
+        
+        .live-reactions {
+            bottom: 80px !important;
+        }
+    }
+</style>
+
+{% endblock %}
+
+{% block page_js %}
+<script>
+    // Global variables
+    let mediaStream = null;
+    let peerConnection = null;
+    let viewers = 0;
+    let likes = 0;
+    let comments = [];
+    let liveId = "{{ live_id }}";
+    
+    // WebSocket connection for live
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    const liveSocket = new WebSocket(`${protocol}://${window.location.host}/ws/live/${liveId}/`);
+
+    // Initialize media devices
+    async function initMedia() {
+        try {
+            mediaStream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: true
+            });
+            
+            const hostVideo = document.getElementById('host-video');
+            if (hostVideo) {
+                hostVideo.srcObject = mediaStream;
+            }
+            
+            const previewVideo = document.getElementById('preview-video');
+            if (previewVideo) {
+                previewVideo.srcObject = mediaStream;
+            }
+            
+            // Get available devices
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(d => d.kind === 'videoinput');
+            const audioDevices = devices.filter(d => d.kind === 'audioinput');
+            
+            // Populate device selects
+            const cameraSelect = document.getElementById('camera-select');
+            const micSelect = document.getElementById('mic-select');
+            
+            videoDevices.forEach((device, index) => {
+                cameraSelect.innerHTML += `<option value="${device.deviceId}">Camera ${index + 1}</option>`;
+            });
+            
+            audioDevices.forEach((device, index) => {
+                micSelect.innerHTML += `<option value="${device.deviceId}">Microphone ${index + 1}</option>`;
+            });
+            
+        } catch (error) {
+            console.error('Error accessing media devices:', error);
+            showToast('Please allow camera and microphone access', 'error');
+        }
+    }
+
+    // Show pre-live modal on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = new bootstrap.Modal(document.getElementById('preLiveModal'));
+        modal.show();
+        initMedia();
+    });
+
+    // Start Live
+    function startLive() {
+        const title = document.getElementById('live-title').value;
+        const category = document.getElementById('live-category').value;
+        const notify = document.getElementById('notifyFollowers').checked;
+        
+        // Hide modal
+        bootstrap.Modal.getInstance(document.getElementById('preLiveModal')).hide();
+        
+        // Start live stream
+        liveSocket.send(JSON.stringify({
+            type: 'start_live',
+            title: title,
+            category: category,
+            notify: notify
+        }));
+        
+        // Start viewer count updates
+        startViewerUpdates();
+        
+        showToast('You are now live!', 'success');
+    }
+
+    // WebSocket message handler
+    liveSocket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        
+        switch(data.type) {
+            case 'new_viewer':
+                updateViewerCount(data.viewers);
+                addViewerToList(data.user);
+                break;
+                
+            case 'new_comment':
+                addComment(data.comment);
+                updateCommentCount();
+                break;
+                
+            case 'new_reaction':
+                showReaction(data.reaction, data.user);
+                break;
+                
+            case 'like':
+                updateLikes(data.total_likes);
+                break;
+                
+            case 'join_request':
+                handleJoinRequest(data.user);
+                break;
+        }
+    };
+
+    // Update viewer count
+    function updateViewerCount(count) {
+        viewers = count;
+        document.getElementById('viewer-count').textContent = `${count} watching`;
+        
+        // Update goals
+        updateGoals();
+    }
+
+    // Add comment
+    function addComment(comment) {
+        comments.push(comment);
+        const commentsList = document.getElementById('comments-list');
+        
+        // Remove empty state if exists
+        if (commentsList.querySelector('.text-center')) {
+            commentsList.innerHTML = '';
+        }
+        
+        const commentEl = document.createElement('div');
+        commentEl.className = 'live-comment mb-2';
+        commentEl.innerHTML = `
+            <span class="text-danger fw-semibold me-2">${comment.user}:</span>
+            <span class="text-white">${comment.text}</span>
+        `;
+        commentsList.appendChild(commentEl);
+        commentsList.scrollTop = commentsList.scrollHeight;
+        
+        updateCommentCount();
+    }
+
+    // Send comment
+    function sendComment() {
+        const input = document.getElementById('comment-input');
+        const text = input.value.trim();
+        
+        if (text) {
+            liveSocket.send(JSON.stringify({
+                type: 'comment',
+                text: text
+            }));
+            input.value = '';
+        }
+    }
+
+    // Send reaction
+    function sendReaction(reaction) {
+        liveSocket.send(JSON.stringify({
+            type: 'reaction',
+            reaction: reaction
+        }));
+        
+        // Show reaction on host screen
+        showReaction(reaction, 'You');
+    }
+
+    // Show reaction animation
+    function showReaction(reaction, user) {
+        const container = document.getElementById('video-container');
+        const reactionEl = document.createElement('div');
+        reactionEl.className = 'reaction-animation';
+        reactionEl.textContent = reaction;
+        reactionEl.style.left = Math.random() * 80 + 10 + '%';
+        reactionEl.style.top = Math.random() * 80 + 10 + '%';
+        container.appendChild(reactionEl);
+        
+        setTimeout(() => {
+            reactionEl.remove();
+        }, 2000);
+    }
+
+    // Update comment count
+    function updateCommentCount() {
+        document.getElementById('comment-count').textContent = comments.length;
+        updateGoals();
+    }
+
+    // Update likes
+    function updateLikes(total) {
+        likes = total;
+        document.getElementById('goal-likes').textContent = `${likes}/1000`;
+        document.getElementById('likes-progress').style.width = `${(likes/1000)*100}%`;
+    }
+
+    // Update goals
+    function updateGoals() {
+        document.getElementById('goal-viewers').textContent = `${viewers}/100`;
+        document.getElementById('viewer-progress').style.width = `${(viewers/100)*100}%`;
+        
+        document.getElementById('goal-comments').textContent = `${comments.length}/500`;
+        document.getElementById('comments-progress').style.width = `${(comments.length/500)*100}%`;
+        
+        // Update summary for end modal
+        document.getElementById('summary-viewers').textContent = viewers;
+        document.getElementById('summary-likes').textContent = likes;
+        document.getElementById('summary-comments').textContent = comments.length;
+    }
+
+    // Toggle camera
+    function toggleCamera() {
+        if (mediaStream) {
+            const videoTrack = mediaStream.getVideoTracks()[0];
+            if (videoTrack) {
+                const enabled = !videoTrack.enabled;
+                videoTrack.enabled = enabled;
+                document.getElementById('camera-icon').className = enabled ? 'fas fa-video' : 'fas fa-video-slash';
+            }
+        }
+    }
+
+    // Toggle microphone
+    function toggleMic() {
+        if (mediaStream) {
+            const audioTrack = mediaStream.getAudioTracks()[0];
+            if (audioTrack) {
+                const enabled = !audioTrack.enabled;
+                audioTrack.enabled = enabled;
+                document.getElementById('mic-icon').className = enabled ? 'fas fa-microphone' : 'fas fa-microphone-slash';
+            }
+        }
+    }
+
+    // Invite followers
+    function inviteFollowers() {
+        const modal = new bootstrap.Modal(document.getElementById('inviteModal'));
+        modal.show();
+    }
+
+    function inviteUser(userId) {
+        liveSocket.send(JSON.stringify({
+            type: 'invite',
+            user_id: userId
+        }));
+        
+        const btn = document.querySelector(`[data-user-id="${userId}"]`);
+        btn.textContent = 'Invited';
+        btn.disabled = true;
+        
+        showToast('Invitation sent', 'success');
+    }
+
+    // Copy live link
+    function copyLink() {
+        const linkInput = document.getElementById('live-link');
+        linkInput.select();
+        document.execCommand('copy');
+        showToast('Link copied to clipboard!', 'success');
+    }
+
+    // End live
+    function endLive() {
+        const modal = new bootstrap.Modal(document.getElementById('endLiveModal'));
+        modal.show();
+    }
+
+    function confirmEndLive() {
+        liveSocket.send(JSON.stringify({
+            type: 'end_live'
+        }));
+        
+        // Stop all tracks
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
+        }
+        
+        // Close WebSocket
+        liveSocket.close();
+        
+        // Redirect to summary page
+        window.location.href = `/live/summary/${liveId}/`;
+    }
+
+    // Moderator functions
+    function muteAll() {
+        liveSocket.send(JSON.stringify({ type: 'mute_all' }));
+        showToast('All viewers muted', 'success');
+    }
+
+    function disableComments() {
+        liveSocket.send(JSON.stringify({ type: 'disable_comments' }));
+        showToast('Comments disabled', 'success');
+    }
+
+    // Add viewer to recent list
+    function addViewerToList(user) {
+        const container = document.getElementById('recent-viewers');
+        
+        if (container.querySelector('.text-center')) {
+            container.innerHTML = '';
+        }
+        
+        const viewerEl = document.createElement('div');
+        viewerEl.className = 'd-flex align-items-center gap-2 mb-2';
+        viewerEl.innerHTML = `
+            <div class="rounded-circle overflow-hidden" style="width: 32px; height: 32px;">
+                ${user.profile_pic 
+                    ? `<img src="${user.profile_pic}" class="w-100 h-100 object-fit-cover">`
+                    : `<div class="bg-primary text-white w-100 h-100 d-flex align-items-center justify-content-center">
+                        <span class="small fw-bold">${user.username[0].toUpperCase()}</span>
+                       </div>`
+                }
+            </div>
+            <span class="text-white small">${user.username}</span>
+        `;
+        container.appendChild(viewerEl);
+    }
+
+    // Toast notification
+    function showToast(message, type = 'success') {
+        // Create toast container if not exists
+        let container = document.querySelector('.live-toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'live-toast-container position-fixed top-0 end-0 p-3';
+            container.style.zIndex = '9999';
+            document.body.appendChild(container);
+        }
+        
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type} border-0 show`;
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        
+        container.appendChild(toast);
+        
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Simulate viewer count updates (for demo)
+    function startViewerUpdates() {
+        setInterval(() => {
+            viewers += Math.floor(Math.random() * 3);
+            updateViewerCount(viewers);
+        }, 5000);
+        
+        setInterval(() => {
+            likes += Math.floor(Math.random() * 5);
+            updateLikes(likes);
+        }, 3000);
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            // Show end live confirmation
+            endLive();
+        }
+        
+        // Space to mute/unmute
+        if (e.key === ' ' && !e.target.matches('input, textarea')) {
+            e.preventDefault();
+            toggleMic();
+        }
+        
+        // C to toggle camera
+        if (e.key === 'c' && !e.target.matches('input, textarea')) {
+            e.preventDefault();
+            toggleCamera();
+        }
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        if (mediaStream) {
+            mediaStream.getTracks().forEach(track => track.stop());
+        }
+        liveSocket.close();
+    });
+</script>
+{% endblock %}

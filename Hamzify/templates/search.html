@@ -1,0 +1,688 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Search • Connectify{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="row g-0">
+        <!-- Left Sidebar with Logo -->
+        {% include 'includes/logo_only.html' %}
+
+        <!-- Main Search Content -->
+        <div class="col-12">
+            <div class="container py-4" style="max-width: 900px;">
+                <!-- Search Header - Instagram Style -->
+                <div class="search-header mb-4">
+                    <form action="{% url 'search' %}" method="get" class="d-flex align-items-center gap-3">
+                        <div class="flex-grow-1 position-relative">
+                            <i class="fas fa-search position-absolute top-50 start-0 translate-middle-y ms-3" style="color: #8e8e8e;"></i>
+                            <input type="text" 
+                                   name="q"
+                                   class="form-control form-control-lg rounded-pill bg-light border-0 ps-5" 
+                                   placeholder="Search" 
+                                   id="search-input"
+                                   value="{{ query }}"
+                                   autofocus>
+                            {% if query %}
+                            <button class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-decoration-none" 
+                                    onclick="clearSearch()"
+                                    style="color: #8e8e8e;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                        {% if query %}
+                        <a href="{% url 'search' %}" class="btn btn-link text-decoration-none" style="color: #FF6B6B;">Cancel</a>
+                        {% endif %}
+                    </form>
+                </div>
+
+                <!-- Search Tabs -->
+                <ul class="nav nav-tabs border-0 mb-4" id="searchTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active border-0 bg-transparent px-4 py-2" 
+                                id="top-tab" 
+                                data-bs-toggle="tab" 
+                                data-bs-target="#top" 
+                                type="button" 
+                                role="tab">
+                            <span class="fw-semibold">Top</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link border-0 bg-transparent px-4 py-2" 
+                                id="users-tab" 
+                                data-bs-toggle="tab" 
+                                data-bs-target="#users" 
+                                type="button" 
+                                role="tab">
+                            <span class="fw-semibold">Users</span>
+                            <span class="badge bg-light text-dark ms-2 rounded-pill">{{ users|length }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link border-0 bg-transparent px-4 py-2" 
+                                id="posts-tab" 
+                                data-bs-toggle="tab" 
+                                data-bs-target="#posts" 
+                                type="button" 
+                                role="tab">
+                            <span class="fw-semibold">Posts</span>
+                            <span class="badge bg-light text-dark ms-2 rounded-pill">{{ posts|length }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link border-0 bg-transparent px-4 py-2" 
+                                id="tags-tab" 
+                                data-bs-toggle="tab" 
+                                data-bs-target="#tags" 
+                                type="button" 
+                                role="tab">
+                            <span class="fw-semibold">Tags</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Search Results -->
+                <div class="tab-content" id="searchTabContent">
+                    <!-- Top Results Tab -->
+                    <div class="tab-pane fade show active" id="top" role="tabpanel">
+                        {% if query %}
+                            {% if users or posts %}
+                                <!-- Recent Searches -->
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="fw-semibold mb-0">Recent Searches</h6>
+                                        <button class="btn btn-link text-decoration-none p-0 small" onclick="clearRecent()" style="color: #FF6B6B;">Clear all</button>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for search in recent_searches %}
+                                        <button class="btn btn-light rounded-pill px-3 py-1 recent-search" 
+                                                onclick="searchAgain('{{ search }}')"
+                                                style="font-size: 14px;">
+                                            <i class="fas fa-clock me-2 text-muted"></i>{{ search }}
+                                        </button>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <!-- Top Users -->
+                                {% if users %}
+                                <div class="mb-4">
+                                    <h6 class="fw-semibold mb-3">Top Users</h6>
+                                    {% for u in users|slice:":3" %}
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="rounded-circle overflow-hidden" style="width: 44px; height: 44px;">
+                                                {% if u.profile_pic %}
+                                                <img src="{{ u.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                                {% else %}
+                                                <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center">
+                                                    <span class="fw-bold">{{ u.username|first|upper }}</span>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <a href="/profile/{{ u.username }}/" class="text-decoration-none fw-semibold text-dark">
+                                                    {{ u.username }}
+                                                </a>
+                                                <div class="small text-muted">{{ u.full_name|default:"" }}</div>
+                                            </div>
+                                        </div>
+                                        {% if request.user.is_authenticated and request.user != u %}
+                                        <button class="btn btn-primary btn-sm rounded-pill px-3 follow-btn" 
+                                                data-user-id="{{ u.id }}"
+                                                style="background: #0095f6; border: none;">
+                                            Follow
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+
+                                <!-- Top Posts -->
+                                {% if posts %}
+                                <div>
+                                    <h6 class="fw-semibold mb-3">Top Posts</h6>
+                                    <div class="row g-2">
+                                        {% for p in posts|slice:":6" %}
+                                        <div class="col-4">
+                                            <div class="position-relative rounded-3 overflow-hidden" 
+                                                 style="aspect-ratio: 1/1; cursor: pointer;"
+                                                 onclick="openPost('{{ p.id }}')">
+                                                {% if p.image %}
+                                                <img src="{{ p.image.url }}" class="w-100 h-100 object-fit-cover">
+                                                {% endif %}
+                                                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-25 d-flex align-items-center justify-content-center gap-3 opacity-0 hover-overlay">
+                                                    <span class="text-white"><i class="fas fa-heart me-1"></i>{{ p.likes_count }}</span>
+                                                    <span class="text-white"><i class="fas fa-comment me-1"></i>{{ p.comments_count }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% else %}
+                                <!-- No Results -->
+                                <div class="text-center py-5">
+                                    <div class="mb-4">
+                                        <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center p-5">
+                                            <i class="fas fa-search fa-4x" style="color: #ddd;"></i>
+                                        </div>
+                                    </div>
+                                    <h5 class="fw-bold mb-2">No results found</h5>
+                                    <p class="text-muted">We couldn't find any results for "{{ query }}"</p>
+                                    <div class="suggestions mt-4">
+                                        <p class="small text-muted mb-2">Suggestions:</p>
+                                        <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                            <button class="btn btn-light rounded-pill px-3" onclick="searchSuggestion('travel')">#travel</button>
+                                            <button class="btn btn-light rounded-pill px-3" onclick="searchSuggestion('photography')">#photography</button>
+                                            <button class="btn btn-light rounded-pill px-3" onclick="searchSuggestion('food')">#food</button>
+                                            <button class="btn btn-light rounded-pill px-3" onclick="searchSuggestion('fashion')">#fashion</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <!-- Default Search State - Explore -->
+                            <div class="search-default">
+                                <!-- Recent Searches -->
+                                {% if recent_searches %}
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="fw-semibold mb-0">Recent</h6>
+                                        <button class="btn btn-link text-decoration-none p-0 small" onclick="clearRecent()" style="color: #FF6B6B;">Clear all</button>
+                                    </div>
+                                    <div class="list-group list-group-flush">
+                                        {% for search in recent_searches %}
+                                        <div class="list-group-item border-0 px-0 py-2 d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <i class="fas fa-clock text-muted"></i>
+                                                <span>{{ search }}</span>
+                                            </div>
+                                            <button class="btn btn-link text-muted p-0" onclick="removeRecent('{{ search }}')">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <!-- Suggested Searches -->
+                                <div class="mb-4">
+                                    <h6 class="fw-semibold mb-3">Suggested for you</h6>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <span class="badge bg-light text-dark rounded-pill p-3" style="cursor: pointer;" onclick="searchSuggestion('photography')">
+                                            #photography
+                                        </span>
+                                        <span class="badge bg-light text-dark rounded-pill p-3" style="cursor: pointer;" onclick="searchSuggestion('travel')">
+                                            #travel
+                                        </span>
+                                        <span class="badge bg-light text-dark rounded-pill p-3" style="cursor: pointer;" onclick="searchSuggestion('food')">
+                                            #food
+                                        </span>
+                                        <span class="badge bg-light text-dark rounded-pill p-3" style="cursor: pointer;" onclick="searchSuggestion('fashion')">
+                                            #fashion
+                                        </span>
+                                        <span class="badge bg-light text-dark rounded-pill p-3" style="cursor: pointer;" onclick="searchSuggestion('fitness')">
+                                            #fitness
+                                        </span>
+                                        <span class="badge bg-light text-dark rounded-pill p-3" style="cursor: pointer;" onclick="searchSuggestion('art')">
+                                            #art
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Discover People -->
+                                <div>
+                                    <h6 class="fw-semibold mb-3">Discover People</h6>
+                                    <div class="row g-3">
+                                        {% for u in suggested_users %}
+                                        <div class="col-6 col-md-4">
+                                            <div class="card border-0 text-center p-3" style="box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                                <div class="rounded-circle overflow-hidden mx-auto mb-2" style="width: 80px; height: 80px;">
+                                                    {% if u.profile_pic %}
+                                                    <img src="{{ u.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                                    {% else %}
+                                                    <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center">
+                                                        <span class="fw-bold fs-3">{{ u.username|first|upper }}</span>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                                <a href="/profile/{{ u.username }}/" class="text-decoration-none fw-semibold text-dark">
+                                                    {{ u.username }}
+                                                </a>
+                                                <span class="small text-muted">{{ u.followers_count }} followers</span>
+                                                <button class="btn btn-primary btn-sm rounded-pill mt-2 follow-btn" 
+                                                        data-user-id="{{ u.id }}"
+                                                        style="background: #0095f6; border: none;">
+                                                    Follow
+                                                </button>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Users Tab -->
+                    <div class="tab-pane fade" id="users" role="tabpanel">
+                        <div class="users-list">
+                            {% for u in users %}
+                            <div class="d-flex align-items-center justify-content-between mb-3 p-3 rounded-3 hover-bg-light">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle overflow-hidden" style="width: 56px; height: 56px;">
+                                        {% if u.profile_pic %}
+                                        <img src="{{ u.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                        {% else %}
+                                        <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center">
+                                            <span class="fw-bold fs-4">{{ u.username|first|upper }}</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <a href="/profile/{{ u.username }}/" class="text-decoration-none fw-semibold text-dark">
+                                            {{ u.username }}
+                                        </a>
+                                        <div class="small text-muted">{{ u.full_name|default:"" }}</div>
+                                        <div class="small text-muted">{{ u.bio|truncatechars:50 }}</div>
+                                        <div class="small text-muted mt-1">
+                                            <span class="me-2"><i class="fas fa-users me-1"></i>{{ u.followers_count }} followers</span>
+                                            <span><i class="fas fa-file-image me-1"></i>{{ u.posts_count }} posts</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if request.user.is_authenticated and request.user != u %}
+                                <button class="btn follow-btn {% if u.is_following %}btn-outline-secondary{% else %}btn-primary{% endif %} rounded-pill px-4" 
+                                        data-user-id="{{ u.id }}">
+                                    {% if u.is_following %}Following{% else %}Follow{% endif %}
+                                </button>
+                                {% endif %}
+                            </div>
+                            {% empty %}
+                            <div class="text-center py-5">
+                                <p class="text-muted">No users found matching "{{ query }}"</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Posts Tab -->
+                    <div class="tab-pane fade" id="posts" role="tabpanel">
+                        <div class="posts-list">
+                            {% for p in posts %}
+                            <div class="card border-0 mb-3" style="box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                        <div class="rounded-circle overflow-hidden" style="width: 40px; height: 40px;">
+                                            {% if p.user.profile_pic %}
+                                            <img src="{{ p.user.profile_pic.url }}" class="w-100 h-100 object-fit-cover">
+                                            {% else %}
+                                            <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center">
+                                                <span class="fw-bold">{{ p.user.username|first|upper }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <a href="/profile/{{ p.user.username }}/" class="text-decoration-none fw-semibold text-dark">
+                                                {{ p.user.username }}
+                                            </a>
+                                            <div class="small text-muted">{{ p.created_at|timesince }} ago</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="mb-3">{{ p.content }}</p>
+                                    
+                                    {% if p.image %}
+                                    <img src="{{ p.image.url }}" class="img-fluid rounded-3 mb-3" style="max-height: 400px; width: 100%; object-fit: cover;">
+                                    {% endif %}
+                                    
+                                    <div class="d-flex gap-3">
+                                        <span><i class="fas fa-heart me-1" style="color: #FF6B6B;"></i> {{ p.likes_count }}</span>
+                                        <span><i class="fas fa-comment me-1" style="color: #4ECDC4;"></i> {{ p.comments_count }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="text-center py-5">
+                                <p class="text-muted">No posts found matching "{{ query }}"</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Tags Tab -->
+                    <div class="tab-pane fade" id="tags" role="tabpanel">
+                        <div class="tags-list">
+                            {% for tag in tags %}
+                            <div class="d-flex align-items-center justify-content-between mb-3 p-3 rounded-3 hover-bg-light">
+                                <div>
+                                    <a href="/tag/{{ tag.name }}/" class="text-decoration-none fw-semibold text-dark">
+                                        #{{ tag.name }}
+                                    </a>
+                                    <div class="small text-muted">{{ tag.posts_count }} posts</div>
+                                </div>
+                                <button class="btn btn-outline-primary rounded-pill px-3" onclick="followTag('{{ tag.name }}')">
+                                    Follow
+                                </button>
+                            </div>
+                            {% empty %}
+                            <div class="text-center py-5">
+                                <p class="text-muted">No tags found matching "{{ query }}"</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search Filters (Hidden by default) -->
+<div class="search-filters position-fixed bottom-0 end-0 m-4 d-none d-md-block">
+    <button class="btn btn-light rounded-circle p-3 shadow" data-bs-toggle="dropdown" style="width: 60px; height: 60px;">
+        <i class="fas fa-sliders-h"></i>
+    </button>
+    <div class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3 p-3" style="min-width: 250px;">
+        <h6 class="fw-semibold mb-3">Filter Results</h6>
+        
+        <div class="mb-3">
+            <label class="small fw-semibold text-muted mb-2">Sort by</label>
+            <select class="form-select form-select-sm rounded-pill">
+                <option>Relevance</option>
+                <option>Latest</option>
+                <option>Most liked</option>
+                <option>Most commented</option>
+            </select>
+        </div>
+        
+        <div class="mb-3">
+            <label class="small fw-semibold text-muted mb-2">User type</label>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="verifiedOnly">
+                <label class="form-check-label small" for="verifiedOnly">Verified only</label>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <label class="small fw-semibold text-muted mb-2">Date range</label>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="dateRange" id="anytime" checked>
+                <label class="form-check-label small" for="anytime">Anytime</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="dateRange" id="today">
+                <label class="form-check-label small" for="today">Today</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="dateRange" id="thisWeek">
+                <label class="form-check-label small" for="thisWeek">This week</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="dateRange" id="thisMonth">
+                <label class="form-check-label small" for="thisMonth">This month</label>
+            </div>
+        </div>
+        
+        <button class="btn btn-primary w-100 rounded-pill" style="background: #FF6B6B; border: none;">
+            Apply Filters
+        </button>
+    </div>
+</div>
+
+<style>
+    .hover-bg-light:hover {
+        background-color: #f8f9fa;
+        transition: background-color 0.3s ease;
+    }
+    
+    .hover-overlay {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .position-relative:hover .hover-overlay {
+        opacity: 1;
+    }
+    
+    .nav-tabs .nav-link {
+        color: #8e8e8e;
+        position: relative;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: #262626;
+    }
+    
+    .nav-tabs .nav-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #262626;
+    }
+    
+    .recent-search {
+        transition: all 0.2s ease;
+    }
+    
+    .recent-search:hover {
+        background-color: #FF6B6B !important;
+        color: white !important;
+    }
+    
+    .recent-search:hover i {
+        color: white !important;
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .search-filters {
+            display: block !important;
+        }
+    }
+</style>
+
+{% endblock %}
+
+{% block page_js %}
+<script>
+    // CSRF Token Helper
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Live Search
+    let searchTimeout;
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+
+            if (query.length > 0) {
+                searchTimeout = setTimeout(() => {
+                    window.location.href = `/search/?q=${encodeURIComponent(query)}`;
+                }, 500);
+            }
+        });
+    }
+
+    // Clear Search
+    function clearSearch() {
+        document.getElementById('search-input').value = '';
+        window.location.href = '/search/';
+    }
+
+    // Search Suggestions
+    function searchSuggestion(term) {
+        window.location.href = `/search/?q=${encodeURIComponent(term)}`;
+    }
+
+    function searchAgain(term) {
+        window.location.href = `/search/?q=${encodeURIComponent(term)}`;
+    }
+
+    // Recent Searches Management
+    function addToRecent(search) {
+        let recent = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+        recent = [search, ...recent.filter(s => s !== search)].slice(0, 5);
+        localStorage.setItem('recentSearches', JSON.stringify(recent));
+    }
+
+    function clearRecent() {
+        localStorage.removeItem('recentSearches');
+        location.reload();
+    }
+
+    function removeRecent(search) {
+        let recent = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+        recent = recent.filter(s => s !== search);
+        localStorage.setItem('recentSearches', JSON.stringify(recent));
+        location.reload();
+    }
+
+    // Follow Toggle
+    async function followToggle(userId, btn) {
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Loading...';
+        
+        try {
+            const response = await fetch(`/api/follow/${userId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const data = await response.json();
+            
+            if (data.following) {
+                btn.textContent = 'Following';
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline-secondary');
+            } else {
+                btn.textContent = 'Follow';
+                btn.classList.remove('btn-outline-secondary');
+                btn.classList.add('btn-primary');
+            }
+            
+            showToast(data.following ? 'Following' : 'Unfollowed', 'success');
+            
+        } catch (error) {
+            console.error('Error:', error);
+            btn.textContent = originalText;
+            showToast('Failed to update follow status', 'error');
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    // Follow button click handler
+    document.addEventListener("click", (event) => {
+        if (event.target.matches(".follow-btn")) {
+            followToggle(event.target.dataset.userId, event.target);
+        }
+    });
+
+    // Follow Tag
+    function followTag(tagName) {
+        fetch(`/api/tag/${tagName}/follow/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                showToast(`Following #${tagName}`, 'success');
+            }
+        });
+    }
+
+    // Open Post
+    function openPost(postId) {
+        window.location.href = `/post/${postId}/`;
+    }
+
+    // Toast Notification
+    function showToast(message, type = 'info') {
+        const toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            const container = document.createElement('div');
+            container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(container);
+        }
+        
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0 show`;
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        
+        document.querySelector('.toast-container').appendChild(toast);
+        
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+        // '/' to focus search
+        if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+            e.preventDefault();
+            const input = document.getElementById('search-input');
+            if (input) input.focus();
+        }
+        
+        // Escape to clear search
+        if (e.key === 'Escape' && document.getElementById('search-input') === document.activeElement) {
+            clearSearch();
+        }
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        // Save search to recent if query exists
+        const urlParams = new URLSearchParams(window.location.search);
+        const query = urlParams.get('q');
+        if (query) {
+            addToRecent(query);
+        }
+        
+        // Load recent searches from localStorage
+        const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+        // You can use this to populate recent searches dynamically
+    });
+</script>
+{% endblock %}

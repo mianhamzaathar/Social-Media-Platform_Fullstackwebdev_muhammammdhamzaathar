@@ -1,0 +1,1029 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Connectify - Connect with the World{% endblock %}
+
+{% block content %}
+<script>
+    document.documentElement.classList.add('splash-active');
+</script>
+<div id="startup-splash" class="startup-splash">
+    <div class="startup-logo">
+        <div class="startup-icon"><i class="fas fa-handshake"></i></div>
+        <h1 class="startup-text">Connectify</h1>
+    </div>
+</div>
+
+<div id="landing-content" style="opacity:0; visibility:hidden; transition: opacity 0.35s ease;">
+<!-- Hero Section with Logo Pattern Background -->
+<section class="hero-section position-relative overflow-hidden">
+    <!-- Background Pattern - Exact same as logo -->
+    <div class="logo-pattern-bg"></div>
+    
+    <!-- Floating Brand Elements -->
+    <div class="floating-brand-elements">
+        <div class="floating-handshake handshake1"><i class="fas fa-handshake"></i></div>
+        <div class="floating-handshake handshake2"><i class="fas fa-handshake"></i></div>
+        <div class="floating-handshake handshake3"><i class="fas fa-handshake"></i></div>
+        <div class="floating-handshake handshake4"><i class="fas fa-handshake"></i></div>
+        <div class="floating-handshake handshake5"><i class="fas fa-handshake"></i></div>
+    </div>
+
+    <div class="container position-relative" style="z-index: 10;">
+        <div class="row min-vh-100 align-items-center">
+            <div class="col-lg-7 text-white">
+                <!-- Main Logo - Massive Version -->
+                <div class="massive-logo mb-5 animate__animated animate__fadeInUp">
+                    <div class="d-flex align-items-center gap-4">
+                        <div class="giant-brand-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <div>
+                            <h1 class="display-1 fw-bold mb-0">
+                                <span class="giant-brand-text">Connectify</span>
+                            </h1>
+                            <div class="d-flex gap-2 mt-2">
+                                <span class="logo-dot-large"></span>
+                                <span class="logo-dot-large" style="animation-delay: 0.3s;"></span>
+                                <span class="logo-dot-large" style="animation-delay: 0.6s;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="display-3 fw-bold mb-4 animate__animated animate__fadeInUp animate__delay-1s">
+                    Connect with<br>
+                    <span class="brand-gradient-text">Everyone You Love</span>
+                </h2>
+
+                <p class="landing-pak-text animate__animated animate__fadeInUp animate__delay-1s">
+                    Creativity from Pakistan
+                </p>
+                
+                <p class="lead mb-5 animate__animated animate__fadeInUp animate__delay-2s" style="max-width: 600px; font-size: 1.5rem;">
+                    Join the network that puts <span class="fw-bold" style="color: #FF6B6B;">connections</span> first. 
+                    Where every handshake matters.
+                </p>
+
+                <!-- Only Sign In and Sign Up Buttons - No Go to Feed -->
+                <div class="d-flex flex-wrap gap-4 animate__animated animate__fadeInUp animate__delay-3s">
+                    <a href="/register/" class="btn btn-brand btn-lg px-5 py-3" style="font-size: 1.2rem;">
+                        <i class="fas fa-handshake me-2"></i>
+                        Sign Up
+                    </a>
+                    <a href="/login/" class="btn btn-outline-brand btn-lg px-5 py-3" style="font-size: 1.2rem;">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Sign In
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- Right Side - Logo Pattern Cards -->
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="pattern-cards">
+                    <div class="pattern-card card1">
+                        <div class="pattern-card-inner">
+                            <i class="fas fa-handshake pattern-card-icon"></i>
+                            <h5>Connect</h5>
+                        </div>
+                    </div>
+                    <div class="pattern-card card2">
+                        <div class="pattern-card-inner">
+                            <i class="fas fa-handshake pattern-card-icon"></i>
+                            <h5>Share</h5>
+                        </div>
+                    </div>
+                    <div class="pattern-card card3">
+                        <div class="pattern-card-inner">
+                            <i class="fas fa-handshake pattern-card-icon"></i>
+                            <h5>Grow</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scroll Indicator with Logo Pattern -->
+    <div class="scroll-indicator">
+        <div class="mouse">
+            <div class="mouse-handshake">
+                <i class="fas fa-handshake"></i>
+            </div>
+        </div>
+        <p class="small text-white-50 mt-2">Join the community</p>
+    </div>
+</section>
+
+<!-- Brand Pattern Showcase -->
+<section class="pattern-showcase py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <div class="d-inline-block mb-4">
+                <div class="brand-icon-medium">
+                    <i class="fas fa-handshake"></i>
+                </div>
+            </div>
+            <h2 class="display-5 fw-bold mb-3">
+                Built on <span class="brand-gradient-text">Trust</span> and <span class="brand-gradient-text">Connection</span>
+            </h2>
+            <p class="lead text-muted">Every feature designed to bring you closer</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Feature Cards with Logo Pattern Background -->
+            <div class="col-md-6 col-lg-3">
+                <div class="brand-feature-card">
+                    <div class="feature-pattern-bg"></div>
+                    <div class="feature-content">
+                        <div class="feature-brand-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h4>Instant Connection</h4>
+                        <p class="text-muted">Connect instantly with friends and family through our secure platform</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="brand-feature-card">
+                    <div class="feature-pattern-bg"></div>
+                    <div class="feature-content">
+                        <div class="feature-brand-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h4>Trusted Network</h4>
+                        <p class="text-muted">Join millions of trusted users sharing authentic moments</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="brand-feature-card">
+                    <div class="feature-pattern-bg"></div>
+                    <div class="feature-content">
+                        <div class="feature-brand-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h4>Global Community</h4>
+                        <p class="text-muted">Connect across borders with our international community</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="brand-feature-card">
+                    <div class="feature-pattern-bg"></div>
+                    <div class="feature-content">
+                        <div class="feature-brand-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h4>Always Safe</h4>
+                        <p class="text-muted">Your privacy protected with state-of-the-art security</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feature CTA -->
+        <div class="text-center mt-5">
+            <a href="/register/" class="btn btn-brand px-5 py-3">
+                <i class="fas fa-handshake me-2"></i>
+                Get Started Free
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Connection Stats with Logo Pattern -->
+<section class="stats-section py-5">
+    <div class="container py-5">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-pattern"></div>
+                    <div class="stat-content">
+                        <div class="stat-brand-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h3 class="display-4 fw-bold counter" data-target="500">0</h3>
+                        <p class="text-muted mb-0">Million+ Connections</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-pattern"></div>
+                    <div class="stat-content">
+                        <div class="stat-brand-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h3 class="display-4 fw-bold counter" data-target="150">0</h3>
+                        <p class="text-muted mb-0">Countries Reached</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-pattern"></div>
+                    <div class="stat-content">
+                        <div class="stat-brand-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h3 class="display-4 fw-bold counter" data-target="50">0</h3>
+                        <p class="text-muted mb-0">Languages Supported</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section py-5 bg-light">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">
+                Loved by <span class="brand-gradient-text">Millions</span>
+            </h2>
+            <p class="lead text-muted">Join the community of happy connectors</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-pattern"></div>
+                    <div class="testimonial-content">
+                        <div class="quote-icon">"</div>
+                        <p class="mb-4">Connectify helped me reconnect with old friends and make new ones. It's amazing!</p>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="testimonial-avatar bg-gradient-1">
+                                <span>JD</span>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">John Doe</h6>
+                                <small class="text-muted">Member since 2023</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-pattern"></div>
+                    <div class="testimonial-content">
+                        <div class="quote-icon">"</div>
+                        <p class="mb-4">The best social platform I've ever used. Simple, clean, and effective.</p>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="testimonial-avatar bg-gradient-2">
+                                <span>SA</span>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Sarah Ahmed</h6>
+                                <small class="text-muted">Member since 2024</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-pattern"></div>
+                    <div class="testimonial-content">
+                        <div class="quote-icon">"</div>
+                        <p class="mb-4">Connected with family across the globe. Worth every moment!</p>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="testimonial-avatar bg-gradient-3">
+                                <span>MK</span>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Mike Chen</h6>
+                                <small class="text-muted">Member since 2023</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section with Logo Pattern -->
+<section class="cta-brand-section py-5">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <!-- Giant Floating Handshake -->
+                <div class="cta-giant-handshake mb-5">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                
+                <h2 class="display-4 fw-bold text-white mb-4">
+                    Ready to Make Your <span class="text-warning">Connection</span>?
+                </h2>
+                
+                <p class="lead text-white-50 mb-5" style="font-size: 1.3rem;">
+                    Join millions of users who've already found their community on Connectify
+                </p>
+                
+                <!-- Only Sign Up and Sign In buttons in CTA -->
+                <div class="d-flex flex-wrap gap-4 justify-content-center">
+                    <a href="/register/" class="btn btn-cta-brand btn-lg px-5 py-3">
+                        <i class="fas fa-handshake me-2"></i>
+                        Sign Up Now
+                    </a>
+                    <a href="/login/" class="btn btn-outline-cta-brand btn-lg px-5 py-3">
+                        <i class="fas fa-sign-in-alt me-2"></i>
+                        Sign In
+                    </a>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Custom CSS -->
+<style>
+    /* Brand Colors */
+    :root {
+        --brand-coral: #FF6B6B;
+        --brand-turquoise: #4ECDC4;
+        --brand-gradient: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+    }
+
+    /* Hero Section with Logo Pattern */
+    .hero-section {
+        position: relative;
+        background: #1a1a2e;
+        min-height: 100vh;
+        overflow: hidden;
+    }
+
+    /* Exact Logo Pattern Background */
+    .logo-pattern-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            repeating-linear-gradient(45deg, 
+                transparent 0px, 
+                transparent 20px,
+                rgba(255, 107, 107, 0.03) 20px,
+                rgba(255, 107, 107, 0.03) 40px
+            ),
+            repeating-linear-gradient(135deg,
+                transparent 0px,
+                transparent 30px,
+                rgba(78, 205, 196, 0.03) 30px,
+                rgba(78, 205, 196, 0.03) 60px
+            ),
+            radial-gradient(circle at 20% 30%, rgba(255,107,107,0.05) 0%, transparent 30%),
+            radial-gradient(circle at 80% 70%, rgba(78,205,196,0.05) 0%, transparent 30%);
+        animation: patternMove 20s linear infinite;
+    }
+
+    @keyframes patternMove {
+        0% { background-position: 0 0; }
+        100% { background-position: 100px 100px; }
+    }
+
+    /* Floating Handshake Icons */
+    .floating-brand-elements {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .floating-handshake {
+        position: absolute;
+        color: rgba(255,107,107,0.1);
+        font-size: 3rem;
+        animation: floatHandshake 15s infinite;
+    }
+
+    .handshake1 { top: 10%; left: 5%; animation-delay: 0s; }
+    .handshake2 { top: 30%; right: 10%; animation-delay: -3s; font-size: 4rem; }
+    .handshake3 { bottom: 20%; left: 15%; animation-delay: -6s; font-size: 5rem; }
+    .handshake4 { top: 50%; right: 20%; animation-delay: -9s; }
+    .handshake5 { bottom: 10%; right: 30%; animation-delay: -12s; }
+
+    @keyframes floatHandshake {
+        0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.1; }
+        50% { transform: translateY(-50px) rotate(10deg); opacity: 0.15; }
+    }
+
+    /* Giant Brand Icon */
+    .giant-brand-icon {
+        width: 150px;
+        height: 150px;
+        background: var(--brand-gradient);
+        border-radius: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 5rem;
+        color: white;
+        transform: rotate(10deg);
+        transition: all 0.5s ease;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        animation: rotateGently 10s infinite;
+    }
+
+    .giant-brand-icon:hover {
+        transform: rotate(0deg) scale(1.1);
+    }
+
+    @keyframes rotateGently {
+        0%, 100% { transform: rotate(10deg); }
+        50% { transform: rotate(15deg); }
+    }
+
+    .giant-brand-text {
+        font-size: 6rem;
+        font-weight: 800;
+        background: var(--brand-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -2px;
+    }
+
+    .logo-dot-large {
+        width: 15px;
+        height: 15px;
+        background: var(--brand-coral);
+        border-radius: 50%;
+        display: inline-block;
+        animation: pulseLarge 2s infinite;
+    }
+
+    @keyframes pulseLarge {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.5); opacity: 0.7; }
+    }
+
+    .brand-gradient-text {
+        background: var(--brand-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Brand Buttons */
+    .btn-brand {
+        background: var(--brand-gradient);
+        color: white;
+        border: none;
+        border-radius: 60px;
+        transition: all 0.3s ease;
+        box-shadow: 0 15px 30px rgba(255,107,107,0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-brand::before {
+        content: '\f2b5';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        position: absolute;
+        left: -20px;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .btn-brand:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 40px rgba(255,107,107,0.4);
+        padding-left: 3rem;
+    }
+
+    .btn-brand:hover::before {
+        left: 1.5rem;
+        opacity: 1;
+    }
+
+    .btn-outline-brand {
+        background: transparent;
+        color: white;
+        border: 2px solid transparent;
+        border-image: var(--brand-gradient);
+        border-image-slice: 1;
+        border-radius: 60px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-outline-brand:hover {
+        background: var(--brand-gradient);
+        color: white;
+        transform: translateY(-5px);
+    }
+
+    /* Pattern Cards */
+    .pattern-cards {
+        position: relative;
+        height: 500px;
+    }
+
+    .pattern-card {
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 30px;
+        overflow: hidden;
+        border: 2px solid rgba(255,255,255,0.2);
+    }
+
+    .pattern-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: var(--brand-gradient);
+        opacity: 0.1;
+        transform: rotate(45deg);
+        animation: patternRotate 10s linear infinite;
+    }
+
+    @keyframes patternRotate {
+        from { transform: rotate(45deg); }
+        to { transform: rotate(405deg); }
+    }
+
+    .pattern-card-inner {
+        position: relative;
+        z-index: 2;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+
+    .pattern-card-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        background: var(--brand-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .card1 { top: 10%; left: 0; animation: floatPattern 6s infinite; }
+    .card2 { top: 40%; right: 0; animation: floatPattern 6s infinite 2s; }
+    .card3 { bottom: 10%; left: 20%; animation: floatPattern 6s infinite 4s; }
+
+    @keyframes floatPattern {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-30px); }
+    }
+
+    /* Brand Feature Cards */
+    .brand-feature-card {
+        position: relative;
+        background: white;
+        border-radius: 30px;
+        overflow: hidden;
+        height: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    .brand-feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(255,107,107,0.1);
+    }
+
+    .feature-pattern-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            repeating-linear-gradient(45deg, 
+                rgba(255,107,107,0.02) 0px,
+                rgba(255,107,107,0.02) 10px,
+                rgba(78,205,196,0.02) 10px,
+                rgba(78,205,196,0.02) 20px
+            );
+        opacity: 0.5;
+    }
+
+    .feature-content {
+        position: relative;
+        z-index: 2;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .feature-brand-icon {
+        width: 60px;
+        height: 60px;
+        background: var(--brand-gradient);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: white;
+        margin: 0 auto 1.5rem;
+        transform: rotate(5deg);
+        transition: all 0.3s ease;
+    }
+
+    .brand-feature-card:hover .feature-brand-icon {
+        transform: rotate(0deg) scale(1.1);
+    }
+
+    /* Stat Cards with Pattern */
+    .stat-card {
+        position: relative;
+        background: white;
+        border-radius: 30px;
+        overflow: hidden;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .stat-pattern {
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: var(--brand-gradient);
+        opacity: 0.02;
+        transform: rotate(30deg);
+        transition: all 0.5s ease;
+    }
+
+    .stat-card:hover .stat-pattern {
+        transform: rotate(60deg);
+        opacity: 0.05;
+    }
+
+    .stat-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .stat-brand-icon {
+        width: 50px;
+        height: 50px;
+        background: var(--brand-gradient);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        margin: 0 auto 1rem;
+        transform: rotate(5deg);
+    }
+
+    /* Testimonial Cards */
+    .testimonial-card {
+        position: relative;
+        background: white;
+        border-radius: 30px;
+        overflow: hidden;
+        height: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .testimonial-pattern {
+        position: absolute;
+        top: -20%;
+        right: -20%;
+        width: 150px;
+        height: 150px;
+        background: var(--brand-gradient);
+        opacity: 0.03;
+        border-radius: 50%;
+        animation: pulseTestimonial 5s infinite;
+    }
+
+    @keyframes pulseTestimonial {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
+
+    .testimonial-content {
+        position: relative;
+        z-index: 2;
+        padding: 2rem;
+    }
+
+    .quote-icon {
+        font-size: 5rem;
+        font-family: serif;
+        color: var(--brand-coral);
+        opacity: 0.2;
+        line-height: 0.5;
+        margin-bottom: 1rem;
+    }
+
+    .testimonial-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+
+    .bg-gradient-1 { background: linear-gradient(135deg, #FF6B6B, #FF8E8E); }
+    .bg-gradient-2 { background: linear-gradient(135deg, #4ECDC4, #45B7AF); }
+    .bg-gradient-3 { background: linear-gradient(135deg, #667eea, #764ba2); }
+
+    /* CTA Section with Pattern */
+    .cta-brand-section {
+        position: relative;
+        background:
+            radial-gradient(circle at 12% 18%, rgba(255,255,255,0.24) 0 6%, rgba(255,255,255,0) 11%),
+            radial-gradient(circle at 28% 34%, rgba(255,255,255,0.18) 0 5%, rgba(255,255,255,0) 10%),
+            radial-gradient(circle at 72% 26%, rgba(255,255,255,0.2) 0 6%, rgba(255,255,255,0) 11%),
+            radial-gradient(circle at 84% 72%, rgba(255,255,255,0.16) 0 5%, rgba(255,255,255,0) 10%),
+            linear-gradient(120deg, #f27b7c 0%, #f5a8a9 36%, #e7dbe2 54%, #9fdfd8 76%, #72d1c8 100%);
+        overflow: hidden;
+    }
+
+    .cta-brand-section::before {
+        content: none;
+    }
+
+    .cta-giant-handshake {
+        font-size: 8rem;
+        color: rgba(255,107,107,0.2);
+        animation: handshakePulse 3s infinite;
+    }
+
+    @keyframes handshakePulse {
+        0%, 100% { transform: scale(1); opacity: 0.2; }
+        50% { transform: scale(1.1); opacity: 0.3; }
+    }
+
+    .btn-cta-brand {
+        background: var(--brand-gradient);
+        color: white;
+        border: none;
+        border-radius: 60px;
+        font-size: 1.2rem;
+        padding: 1rem 3rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-cta-brand:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(255,107,107,0.4);
+    }
+
+    .btn-outline-cta-brand {
+        background: transparent;
+        color: white;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 60px;
+        font-size: 1.2rem;
+        padding: 1rem 3rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-cta-brand:hover {
+        border-color: var(--brand-turquoise);
+        background: rgba(78,205,196,0.1);
+        transform: translateY(-5px);
+    }
+
+    /* Footer */
+    .footer-section {
+        background: white;
+        border-top: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .footer-brand-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--brand-gradient);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        transform: rotate(5deg);
+    }
+
+    .social-icon {
+        width: 36px;
+        height: 36px;
+        background: #f0f2f5;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #4a5568;
+        transition: all 0.3s ease;
+    }
+
+    .social-icon:hover {
+        background: var(--brand-gradient);
+        color: white;
+        transform: translateY(-3px);
+    }
+
+    /* Scroll Indicator */
+    .mouse {
+        width: 40px;
+        height: 70px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 30px;
+        position: relative;
+        margin: 0 auto;
+    }
+
+    .mouse-handshake {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        font-size: 1rem;
+        animation: mouseMove 2s infinite;
+    }
+
+    @keyframes mouseMove {
+        0% { transform: translateX(-50%) translateY(0); opacity: 1; }
+        100% { transform: translateX(-50%) translateY(30px); opacity: 0; }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .giant-brand-icon {
+            width: 80px;
+            height: 80px;
+            font-size: 2.5rem;
+        }
+        
+        .giant-brand-text {
+            font-size: 3rem;
+        }
+        
+        .display-3 {
+            font-size: 2rem;
+        }
+        
+        .btn-brand, .btn-outline-brand {
+            width: 100%;
+        }
+    }
+
+    .landing-pak-text {
+        background: var(--brand-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        margin-top: -0.6rem;
+        margin-bottom: 1.6rem;
+        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.28);
+    }
+
+    /* Bokeh coral/teal background override */
+    .hero-section {
+        background:
+            radial-gradient(circle at 10% 18%, rgba(255,255,255,0.35) 0 5%, rgba(255,255,255,0) 9%),
+            radial-gradient(circle at 22% 30%, rgba(255,255,255,0.28) 0 4%, rgba(255,255,255,0) 8%),
+            radial-gradient(circle at 35% 14%, rgba(255,255,255,0.30) 0 6%, rgba(255,255,255,0) 10%),
+            radial-gradient(circle at 70% 24%, rgba(255,255,255,0.22) 0 5%, rgba(255,255,255,0) 9%),
+            radial-gradient(circle at 88% 40%, rgba(255,255,255,0.25) 0 6%, rgba(255,255,255,0) 10%),
+            radial-gradient(circle at 76% 78%, rgba(255,255,255,0.24) 0 5%, rgba(255,255,255,0) 9%),
+            linear-gradient(115deg, #f37d7e 0%, #f6a6a7 32%, #e9dfe5 52%, #9bded8 74%, #6ecfc6 100%);
+    }
+
+    .logo-pattern-bg {
+        background: transparent;
+    }
+</style>
+
+<!-- Counter Animation -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Counter animation
+    const counters = document.querySelectorAll('.counter');
+    
+    const animateCounter = (counter) => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        const count = parseInt(counter.innerText);
+        const increment = target / 100;
+
+        if (count < target) {
+            counter.innerText = Math.ceil(count + increment);
+            setTimeout(() => animateCounter(counter), 20);
+        } else {
+            counter.innerText = target + '+';
+        }
+    };
+
+    // Intersection Observer
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const counter = entry.target;
+                counter.innerText = '0';
+                animateCounter(counter);
+                observer.unobserve(counter);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    counters.forEach(counter => observer.observe(counter));
+});
+</script>
+
+<style>
+    .startup-splash {
+        position: fixed;
+        inset: 0;
+        background:
+            radial-gradient(circle at 10% 18%, rgba(255,255,255,0.24) 0 6%, rgba(255,255,255,0) 11%),
+            radial-gradient(circle at 28% 34%, rgba(255,255,255,0.18) 0 5%, rgba(255,255,255,0) 10%),
+            radial-gradient(circle at 72% 26%, rgba(255,255,255,0.2) 0 6%, rgba(255,255,255,0) 11%),
+            radial-gradient(circle at 84% 72%, rgba(255,255,255,0.16) 0 5%, rgba(255,255,255,0) 10%),
+            linear-gradient(120deg, #f27b7c 0%, #f5a8a9 36%, #e7dbe2 54%, #9fdfd8 76%, #72d1c8 100%);
+        z-index: 12000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .startup-logo {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+    }
+
+    .startup-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 2rem;
+        animation: splashPop 0.8s ease infinite alternate;
+    }
+
+    .startup-text {
+        margin: 0;
+        font-size: 2.2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    @keyframes splashPop {
+        from { transform: scale(0.96); }
+        to { transform: scale(1.04); }
+    }
+</style>
+
+<script>
+    window.addEventListener('load', function() {
+        const splash = document.getElementById('startup-splash');
+        const content = document.getElementById('landing-content');
+        setTimeout(function() {
+            splash.style.display = 'none';
+            content.style.visibility = 'visible';
+            content.style.opacity = '1';
+            document.documentElement.classList.remove('splash-active');
+        }, 2000);
+    });
+</script>
+</div>
+{% endblock %}
