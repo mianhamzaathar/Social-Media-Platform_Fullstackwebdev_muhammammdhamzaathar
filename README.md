@@ -1,4 +1,4 @@
-# Social Media Platform (Hamzify)
+# Social Media Platform (Connectify)
 
 Full-stack Django social media project with:
 - Authentication (login/register/logout)
