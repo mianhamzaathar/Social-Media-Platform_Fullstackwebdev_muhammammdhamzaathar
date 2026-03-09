@@ -613,10 +613,6 @@
                     {% endif %}
                 {% else %}
                     <!-- Guest Navigation -->
-                    <a href="/search/" class="nav-chip">
-                        <i class="fas fa-search"></i>
-                        <span>Explore</span>
-                    </a>
                     <a href="/login/" class="nav-chip">
                         <i class="fas fa-sign-in-alt"></i>
                         <span>Login</span>
@@ -895,6 +891,13 @@
             if (mainContent) {
                 mainContent.classList.add('fade-in');
             }
+
+            // Safety: remove any stale Explore chip from cached/old DOM states
+            document.querySelectorAll('.nav-chip').forEach((chip) => {
+                if ((chip.textContent || '').trim().toLowerCase() === 'explore') {
+                    chip.remove();
+                }
+            });
             
             // Set active nav link
             const currentPath = window.location.pathname;
