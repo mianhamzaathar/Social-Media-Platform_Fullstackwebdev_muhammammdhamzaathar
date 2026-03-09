@@ -1,6 +1,6 @@
 
 ## UI Preview
-![UI Preview](Screenshot 2026-03-09 205216.png)
+![UI Preview](connectify.png)
 # Social Media Platform (Connectify)
 
 Full-stack Django social media project with:
